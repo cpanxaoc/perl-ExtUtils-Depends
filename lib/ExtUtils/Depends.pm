@@ -3,346 +3,297 @@
 #
 
 package ExtUtils::Depends;
-use File::Spec;
-use File::Basename;
-use Carp;
-use Cwd;
-use IO::File;
-use strict;
-use vars qw($AUTOLOAD $VERSION);
 
-$VERSION = 0.104;
+use strict;
+use warnings;
+use Carp;
+use File::Spec;
+use Data::Dumper;
+
+our $VERSION = '0.200';
 
 sub new {
-	my ($class, $package, @depends) = @_;
-	my $self = {
-		_name_ => $package,
-		_depends_ => [@depends],
-		_dtypemaps_ => [],
-		_ddefines_ => [],
-		_prefix_ => 'xs/',
-		_install_ => [qw(typemaps defs)],
-		_handler_ => {
-			typemaps => \&basename,
-			defs => \&basename,
-			headers => sub {
-				my $s = $_[0]; 
-				$s =~ s(^[^<"]+/)(); #"
-				return $s;
-			},
-		},
-	};
-	$class = ref($class) || $class;
+	my ($class, $name, @deps) = @_;
+	my $self = bless {
+		name => $name,
+		deps => {},
+		inc => [],
+		libs => [],
 
-	$self = bless $self, $class;
+		pm => {},
+		typemaps => [],
+		xs => [],
+		c => [],
+	}, $class;
 
-	$self->load(@depends) if @depends;
+	$self->add_deps (@deps);
+
+	# attempt to load these now, so we'll find out as soon as possible
+	# whether the dependencies are valid.  we'll load them again in
+	# get_makefile_vars to catch any added between now and then.
+	$self->load_deps;
+
 	return $self;
 }
 
-sub installdir {
+sub add_deps {
 	my $self = shift;
-	my $dir = $self->{_name_};
-	$dir =~ s/^(\w+::)+//;
-	$dir =~ s(::)(/); #/
-	$dir = '$(INST_ARCHLIBDIR)/'.$dir.'/Install/';
-	return $dir;
+	foreach my $d (@_) {
+		$self->{deps}{$d} = undef
+			unless $self->{deps}{$d};
+	}
 }
 
-sub set_prefix {
-	my ($self, $prefix) = @_;
-	$self->{_prefix_} = $prefix;
-}
+sub get_deps {
+	my $self = shift;
+	$self->load_deps; # just in case
 
-sub set_libs {
-	my ($self, $libs) = @_;
-	chomp($libs);
-	$self->{_libs_} = $libs;
+	return %{$self->{deps}};
 }
 
 sub set_inc {
-	my ($self, $inc) = @_;
-	chomp($inc);
-	$self->{_inc_} = $inc;
+	my $self = shift;
+	push @{ $self->{inc} }, @_;
 }
 
-# load dependencies ...
-sub load {
-	my ($self, @depends) = @_;
-	my ($dir, $module);
-	
-	for (@depends) {
-		no strict 'refs';
-		my ($name, $file);
-		undef $dir;
-		if (ref $_) {
-			($name, $file) = %$_;
-			my $dname = $name;
-			my $i = 2;
-			my $tmpdir = $file;
-			$dname =~ s(::)(/); #/
-			while ($i--) {
-				$tmpdir = dirname($tmpdir);
-				if ( -f "$tmpdir/Makefile.PL") {
-					$dir = "$tmpdir/blib/lib/".$dname."/Install/";
-					last;
-				}
-			}
-		} else {
-			$_.='::Install::Files';
-			$module = $_.'.pm';
-			$module =~ s(::)(/)g; #/
-			$name = $_;
-			$file = $module;
-		}
-		eval {require $file;};
-		if ($@) {
-			die "Cannot load $_: $@\n";
-		}
-		$dir ||= ${"${_}::CORE"} || $INC{$file};
-		$dir = cwd().'/'.$dir
-			unless File::Spec->file_name_is_absolute($dir);
-		warn "Found $name in $dir\n";
-		push @{$self->{_dtypemaps_}}, map {$dir.'/'.$_} @{"${_}::typemaps"};
-		#push @{$self->{_ddefs_}}, @{"${_}::defs"};
-		push @{$self->{_ddefines_}}, @{"${_}::defines"};
-		$self->{_dlibs_} .= " ".${"${_}::libs"};
-		$self->{_dinc_} .= " -I$dir ".${"${_}::inc"};
-	}
+sub set_libs {
+	#my $self = shift;
+	#push @{ $self->{libs} }, @_;
+	my ($self, $newlibs) = @_;
+	$self->{libs} = $newlibs;
 }
 
 sub add_pm {
 	my ($self, %pm) = @_;
-	foreach (keys %pm) {
-		$self->{_pm_}->{$_} = $pm{$_};
+	while (my ($key, $value) = each %pm) {
+		$self->{pm}{$key} = $value;
 	}
 }
 
-sub get_pm {
+sub _listkey_add_list {
+	my ($self, $key, @list) = @_;
+	$self->{$key} = [] unless $self->{$key};
+	push @{ $self->{$key} }, @list;
+}
+
+sub add_xs       { shift->_listkey_add_list ('xs',       @_) }
+sub add_c        { shift->_listkey_add_list ('c',        @_) }
+sub add_typemaps {
 	my $self = shift;
-	# maybe make a copy
-	foreach ($self->get_headers) {
-		next unless s/^"//;
-		s/"$//;
-		warn "FORCE installing header: $_\n";
-		$self->{_pm_}->{$_} = $self->installdir().basename($_);
-	}
-	foreach ($self->get_typemaps) {
-		$self->{_pm_}->{$_} = $self->installdir().basename($_);
-	}
-	return $self->{_pm_};
+	$self->_listkey_add_list ('typemaps', @_);
+	$self->install (@_);
+}
+
+sub add_headers { }
+
+####### PRIVATE
+sub basename { (File::Spec->splitdir ($_[0]))[-1] }
+# get the name in Makefile syntax.
+sub installed_filename {
+	my $self = shift;
+	return '$(INST_ARCHLIB)/$(FULLEXT)/Install/'.basename ($_[0]);
 }
 
 sub install {
+	# install things by adding them to the hash of pm files that gets
+	# passed through WriteMakefile's PM key.
 	my $self = shift;
-	my $dir = $self->installdir;
-	foreach (@_) {
-		$self->add_pm($_, $dir.basename($_));
+	foreach my $f (@_) {
+		$self->add_pm ($f, $self->installed_filename ($f));
 	}
-}
-
-# called by AUTOLOAD
-sub real_add {
-	my ($self, $tag, @args) = @_;
-	my $file;
-	
-	foreach (@args) {
-		$file = $self->{_prefix_}.$_;
-		if (-e || ! -e $file) {
-			$file = $_;
-		}
-		$self->{$tag}->{$file} = $self->{_counter_}++;
-	}
-}
-
-# called by AUTOLOAD
-sub real_remove {
-	my ($self, $tag, @args) = @_;
-	my $file;
-	
-	foreach (@args) {
-		$file = $self->{_prefix_}.$_;
-		if (-e || ! -e $file) {
-			$file = $_;
-		}
-		delete $self->{$tag}->{$file};
-	}
-}
-
-# called by AUTOLOAD
-sub real_get {
-	my ($self, $tag) = @_;
-
-	return sort {$self->{$tag}->{$a} <=> $self->{$tag}->{$b}} 
-		keys %{$self->{$tag}};
-}
-
-# handle op_foo, where op is get, add, or remove, and foo is one of the
-# internal keys.
-sub AUTOLOAD {
-	my $self = shift @_;
-	my $method = $AUTOLOAD;
-	my $tag;
-	
-	$method =~ s/^.*:://;
-	if ($method =~ s/^(get|add|remove)_//) {
-		no strict 'subs';
-		$tag = $method;
-		$method = "real_$1";
-		return $self->$method ($tag, @_);
-	}
-	carp "No method '$method'\n";
-}
-
-sub DESTROY {}
-
-sub sort_libs {
-	my ($libs) = '';
-	my (@libs, %seenlibs, @revlibs, @lflags);
-	
-	foreach (@_) {
-		$libs .= ' ';
-		$libs .= $_ if( defined($_) );
-	}
-	$libs =~ s/(^|\s)-[rR]\S+//g;
-	
-	@libs = split(/\s+/, $libs);
-	%seenlibs = ();
-	@revlibs=();
-	@lflags=();
-
-	foreach (@libs) {
-		if (/^-l/) {
-			unshift(@revlibs, $_);
-		} else {
-			unshift(@lflags, $_) unless $seenlibs{$_}++;
-		}
-	}
-	@libs=();
-	foreach (@revlibs) {
-		unshift(@libs, $_) unless $seenlibs{$_}++;
-	}
-	return join(' ', @lflags, @libs);
-}
-
-sub get_makefile_vars {
-	my $self = shift;
-	my (%result);
-	my ($xfiles, $object, $ldfrom, $clean) = $self->setup_xs();
-
-	push @$clean, keys %{$self->{clean}};
-	$result{PM} = $self->get_pm;
-	$result{TYPEMAPS} = [@{$self->{_dtypemaps_}}, $self->get_typemaps];
-	$result{DEFINE} = join(' ', @{$self->{_ddefines_}}, keys %{$self->{defines}});
-	$result{OBJECT} = $object;
-	#$result{LDFROM} = $ldfrom;
-	$result{XS} = $xfiles;
-	$self->{_dinc_} = '' unless( defined($self->{_dinc_}) );
-	$self->{_inc_} = '' unless( defined($self->{_inc_}) );
-	$result{INC} = join(' ', $self->{_dinc_}, $self->{_inc_});
-	$result{LIBS} = [sort_libs($self->{_dlibs_}, $self->{_libs_})];
-	$result{clean} = {FILES => join(' ', @$clean) };
-	
-	return %result;
-}
-
-sub setup_xs {
-	my $self = shift;
-	my $xfiles = {};
-	my ($ldfrom, $object, @clean);
-	
-	$ldfrom = $object = '';
-	foreach (keys %{$self->{xs}}) {
-		my($xs) = $_;
-		s/\.xs$/.c/;
-		$xfiles->{$xs} = $_;
-		push(@clean, $_);
-		s/\.c$/.o/;
-		push(@clean, $_);
-		$object .= " $_";
-		s(.*/)();
-		$ldfrom .= " $_";
-	}
-	foreach (keys %{$self->{c}}) {
-		s/\.c$/.o/i;
-		push(@clean, $_);
-		$object .= " $_";
-	}
-	return ($xfiles, $object, $ldfrom, [@clean]);
 }
 
 sub save_config {
+	use Data::Dumper;
+	use IO::File;
+
 	my ($self, $filename) = @_;
-	my ($file, $mdir, $mdir2, $pm, $name);
-	my (%installable, %handler);
+	warn "writing $filename\n";
 
-	@installable{@{$self->{_install_}}} = ();
-	%handler = %{$self->{_handler_}};
+	my $file = IO::File->new (">".$filename)
+		or croak "can't open '$filename' for writing: $!\n";
 
-	$file = new IO::File ">$filename" || croak "Cannot open '$filename': $!";;
-	$name = $mdir = $mdir2 = $self->{_name_};
-	$pm = $self->{_pm_};
-	
-	$mdir =~ s/.*:://;
-	$mdir2 =~ s.::./.g;
-	
-	$pm->{$filename} = '$(INST_ARCHLIBDIR)/'."$mdir/Install/Files.pm";
-
-	print $file "#!/usr/bin/perl\n\npackage ${name}::Install::Files;\n\n";
-
-	foreach my $tag (sort keys %{$self}) {
-		next if $tag =~ /^_/;
-		my %items = %{$self->{$tag}};
-		print $file "\@$tag = qw(\n";
-		foreach my $item (sort {$items{$a} <=> $items{$b}} keys %items) {
-			my $s = exists $handler{$tag} ? $handler{$tag}->($item): $item;
-			print $file "\t$s\n";
-			$pm->{$item} = '$(INST_ARCHLIBDIR)/'. "$mdir/Install/" . $s if exists $installable{$tag};
-		}
-		print $file ");\n\n";
-	}
-	print $file "\$libs = '$self->{_libs_}';\n";
-	print $file "\$inc = '$self->{_inc_}';\n";
+	print $file "package $self->{name}\::Install::Files;\n\n";
+	# for modern stuff
+	print $file "".Data::Dumper->Dump([{
+		inc => join (" ", @{ $self->{inc} }),
+		libs => $self->{libs},
+		typemaps => [ map { basename $_ } @{ $self->{typemaps} } ],
+		deps => [keys %{ $self->{deps} }],
+	}], ['self']);
+	# for ancient stuff
+	print $file "\n\n# this is for backwards compatiblity\n";
+	print $file "\@deps = \@{ \$self->{deps} };\n";
+	print $file "\@typemaps = \@{ \$self->{typemaps} };\n";
+	print $file "\@headers = \@{ \$self->{headers} };\n";
+	print $file "\$libs = \$self->{libs};\n";
+	print $file "\$inc = \$self->{inc};\n";
+	# this is riduculous, but old versions of ExtUtils::Depends take
+	# first $loadedmodule::CORE and then $INC{$file} --- the fallback
+	# includes the Filename.pm, which is not useful.  so we must add
+	# this crappy code.  we don't worry about portable pathnames,
+	# as the old code didn't either.
+	(my $mdir = $self->{name}) =~ s{::}{/}g;
 	print $file <<"EOT";
 
 	\$CORE = undef;
 	foreach (\@INC) {
-		if ( -f \$_ . "/$mdir2/Install/Files.pm") {
-			\$CORE = \$_ . "/$mdir2/Install/";
+		if ( -f \$_ . "/$mdir/Install/Files.pm") {
+			\$CORE = \$_ . "/$mdir/Install/";
 			last;
 		}
 	}
-
-	1;
 EOT
-	close($file);
+
+	print $file "\n1;\n";
+
+	close $file;
+
+	# we need to ensure that the file we just created gets put into
+	# the install dir with everything else.
+	#$self->install ($filename);
+	$self->add_pm ($filename, $self->installed_filename ('Files.pm'));
 }
 
-sub write_ext {
-	my ($self, $filename) = @_;
-	my $file = new IO::File "> $filename" || carp "Cannot create $filename: $!";
+sub load {
+	my $dep = shift;
+	my @pieces = split /::/, $dep;
+	my @suffix = qw/ Install Files /;
+	my $relpath = File::Spec->catfile (@pieces, @suffix) . '.pm';
+	my $depinstallfiles = join "::", @pieces, @suffix;
+	eval {
+		require $relpath 
+	} or die " *** Can't load dependency information for $dep:\n   $@\n";
+	#
+	#print Dumper(\%INC);
+
+	# effectively $instpath = dirname($INC{$relpath})
+	@pieces = File::Spec->splitdir ($INC{$relpath});
+	pop @pieces;
+	my $instpath = File::Spec->catdir (@pieces);
 	
-	print $file "\n\n# Do not edit this file, as it is automatically generated by Makefile.PL\n\n";
+	no strict;
 
-	print $file "BOOT:\n{\n";
+	croak "no dependency information found for $dep"
+		unless $instpath;
 
-	foreach ($self->get_boot) {
-        my($b) = $_;
-        $b =~ s/::/__/g;
-        $b = "boot_$b";
-        print $file "extern void $b(CV *cv);\n";
-	}
-	foreach ($self->get_boot) {
-        my($b) = $_;
-        $b =~ s/::/__/g;
-        $b = "boot_$b";
-        print $file "callXS($b, cv, mark);\n";
+	warn "found $dep in $instpath\n";
+
+	if (not File::Spec->file_name_is_absolute ($instpath)) {
+		warn "instpath is not absolute; using cwd...\n";
+		$instpath = File::Spec->rel2abs ($instpath);
 	}
 
-	print $file "}\n";
-	close($file);
+	my @typemaps = map {
+		File::Spec->rel2abs ($_, $instpath)
+	} @{"$depinstallfiles\::typemaps"};
 
+	{
+		instpath => $instpath,
+		header   => \@{"$depinstallfiles\::header"},
+		typemaps => \@typemaps,
+		inc      => "-I$instpath ".${"$depinstallfiles\::inc"},
+		libs     => ${"$depinstallfiles\::libs"},
+		# this will not exist when loading files from old versions
+		# of ExtUtils::Depends.
+		(exists ${"$depinstallfiles\::"}{deps}
+		  ? (deps => \@{"$depinstallfiles\::deps"})
+		  : ()), 
+	}
 }
+
+sub load_deps {
+	my $self = shift;
+	my @load = grep { not $self->{deps}{$_} } keys %{ $self->{deps} };
+	foreach my $d (@load) {
+		my $dep = load ($d);
+		$self->{deps}{$d} = $dep;
+		if ($dep->{deps}) {
+			foreach my $childdep (@{ $dep->{deps} }) {
+				push @load, $childdep
+					unless
+						$self->{deps}{$childdep}
+					or
+						grep {$_ eq $childdep} @load;
+			}
+		}
+	}
+}
+
+sub uniquify {
+	my %seen;
+	# we use a seen hash, but also keep indices to preserve
+	# first-seen order.
+	my $i = 0;
+	foreach (@_) {
+		$seen{$_} = ++$i
+			unless exists $seen{$_};
+	}
+	#warn "stripped ".(@_ - (keys %seen))." redundant elements\n";
+	sort { $seen{$a} <=> $seen{$b} } keys %seen;
+}
+
+
+sub get_makefile_vars {
+	my $self = shift;
+
+	# collect and uniquify things from the dependencies.
+	# first, ensure they are completely loaded.
+	$self->load_deps;
+	
+	##my @defbits = map { split } @{ $self->{defines} };
+	my @incbits = map { split } @{ $self->{inc} };
+	my @libsbits = split /\s+/, $self->{libs};
+	my @typemaps = @{ $self->{typemaps} };
+	foreach my $d (keys %{ $self->{deps} }) {
+		my $dep = $self->{deps}{$d};
+		#push @defbits, @{ $dep->{defines} };
+		push @incbits, @{ $dep->{defines} } if $dep->{defines};
+		push @incbits, split /\s+/, $dep->{inc} if $dep->{inc};
+		push @libsbits, split /\s+/, $dep->{libs} if $dep->{libs};
+		push @typemaps, @{ $dep->{typemaps} } if $dep->{typemaps};
+	}
+
+	# we have a fair bit of work to do for the xs files...
+	my @clean = ();
+	my @OBJECT = ();
+	my %XS = ();
+	foreach my $xs (@{ $self->{xs} }) {
+		(my $c = $xs) =~ s/\.xs$/\.c/i;
+		(my $o = $xs) =~ s/\.xs$/\$(OBJ_EXT)/i;
+		$XS{$xs} = $c;
+		push @OBJECT, $o;
+		# according to the MakeMaker manpage, the C files listed in
+		# XS will be added automatically to the list of cleanfiles.
+		push @clean, $o;
+	}
+
+	# we may have C files, as well:
+	foreach my $c (@{ $self->{c} }) {
+		(my $o = $c) =~ s/\.c$/\$(OBJ_EXT)/i;
+		push @OBJECT, $o;
+		push @clean, $o;
+	}
+
+	my %vars = (
+		INC => join (' ', uniquify @incbits),
+		LIBS => join (' ', uniquify @libsbits),
+		TYPEMAPS => [@typemaps],
+		PM => $self->{pm},
+	);
+	$vars{clean} = { FILES => join (" ", @clean), }
+		if @clean;
+	$vars{OBJECT} = join (" ", @OBJECT)
+		if @OBJECT;
+	$vars{XS} = \%XS
+		if %XS;
+
+	%vars;
+}
+
+1;
+
+__END__
 
 =head1 NAME
 
@@ -360,6 +311,8 @@ ExtUtils::Depends - Easily build XS extensions that depend on XS extensions
 	$package->add_xs('module-code.xs');
 	# add the typemaps to use
 	$package->add_typemaps("typemap");
+	# install some extra data files and headers
+	$package->install (qw/foo.h data.txt/);
 	# save the info
 	$package->save_config('Files.pm');
 
@@ -374,6 +327,7 @@ This module tries to make it easy to build Perl extensions that use
 functions and typemaps provided by other perl extensions. This means
 that a perl extension is treated like a shared library that provides
 also a C and an XS interface besides the perl one.
+
 This works as long as the base extension is loaded with the RTLD_GLOBAL
 flag (usually done with a 
 
@@ -381,13 +335,179 @@ flag (usually done with a
 
 in the main .pm file) if you need to use functions defined in the module.
 
+The basic scheme of operation is to collect information about a module
+in the instance, and then store that data in the Perl library where it
+may be retrieved later.  The object can also reformat this information
+into the data structures required by ExtUtils::MakeMaker's WriteMakefile
+function.
+
+When creating a new Depends object, you give it a name, which is the name
+of the module you are building.   You can also specify the names of modules
+on which this module depends.  These dependencies will be loaded
+automatically, and their typemaps, header files, etc merged with your new
+object's stuff.  When you store the data for your object, the list of
+dependencies are stored with it, so that another module depending on your
+needn't know on exactly which modules yours depends.
+
+For example:
+
+  Gtk2 depends on Glib
+
+  Gnome2::Canvas depends on Gtk2
+
+  ExtUtils::Depends->new ('Gnome2::Canvas', 'Gtk2');
+     this command automatically brings in all the stuff needed
+     for Glib, since Gtk2 depends on it.
+
+
+=head1 METHODS
+
+=over
+
+=item $object = ExtUtils::Depends->new($name, @deps)
+
+Create a new depends object named I<$name>.  Any modules listed in I<@deps>
+(which may be empty) are added as dependencies and their dependency
+information is loaded.  An exception is raised if any dependency information
+cannot be loaded.
+
+=item $depends->add_deps (@deps)
+
+Add modules listed in I<@deps> as dependencies.
+
+=item (hashes) = $depends->get_deps
+
+Fetch information on the dependencies of I<$depends> as a hash of hashes,
+which are dependency information indexed by module name.  See C<load>.
+
+=item $depends->set_inc (@newinc)
+
+Add strings to the includes or cflags variables.
+
+=item $depends->set_libs (@newlibs)
+
+Add strings to the libs (linker flags) variable.
+
+=item $depends->add_pm (%pm_files)
+
+Add files to the hash to be passed through ExtUtils::WriteMakefile's
+PM key.
+
+=item $depends->add_xs (@xs_files)
+
+Add xs files to be compiled.
+
+=item $depends->add_c (@c_files)
+
+Add C files to be compiled.
+
+=item $depends->typemaps (@typemaps)
+
+Add typemap files to be used and installed.
+
+=item $depends->add_headers (list)
+
+No-op, for backward compatibility.
+
+=item $depends->install (@files)
+
+Install I<@files> to the data directory for I<$depends>.
+
+This actually works by adding them to the hash of pm files that gets
+passed through WriteMakefile's PM key.
+
+=item $depends->save_config ($filename)
+
+Save the important information from I<$depends> to I<$filename>, and
+set it up to be installed as I<name>::Install::Files.
+
+Note: the actual value of I<$filename> seems to be irrelevant, but its
+usage is kept for backward compatibility.
+
+=item hash = $depends->get_makefile_vars
+
+Return the information in I<$depends> in a format digestible by
+WriteMakefile.
+
+This sets at least the following keys:
+
+	INC
+	LIBS
+	TYPEMAPS
+	PM
+
+And these if there is data to fill them:
+
+	clean
+	OBJECT
+	XS
+
+=item hashref = ExtUtils::Depends::load (name)
+
+Load and return dependency information for I<name>.  Croaks if no such
+information can be found.  The information is returned as an anonymous
+hash containing these keys:
+
+=over
+
+=item instpath
+
+The absolute path to the data install directory for this module.
+
+=item typemaps
+
+List of absolute pathnames for this module's typemap files.
+
+=item inc
+
+CFLAGS string for this module.
+
+=item libs
+
+LIBS string for this module.
+
+=item deps
+
+List of modules on which this one depends.  This key will not exist when
+loading files created by old versions of ExtUtils::Depends.
+
+=item header
+
+List of header files.  For backwards compatibility, no longer used.
+
+=back
+
+=item $depends->load_deps
+
+Load I<$depends> dependencies, by calling C<load> on each dependency module.
+This is usually done for you, and should only be needed if you want to call
+C<get_deps> after calling C<add_deps> manually.
+
+=back
+
+
+=head1 BUGS
+
+As written, this module expects that RTLD_GLOBAL works on your platform,
+which is not always true, most notably, on win32.  We need to include a
+way to find the actual shared libraries created for extension modules
+so new extensions may be linked explicitly with them.
+
+Version 0.2 discards some of the more esoteric features provided by the
+older versions.  As they were completely undocumented, and this module
+has yet to reach 1.0, this may not exactly be a bug.
+
+This module is tightly coupled to the ExtUtils::MakeMaker architecture.
+
 =head1 SEE ALSO
 
 ExtUtils::MakeMaker.
 
 =head1 AUTHOR
 
-Paolo Molaro, lupus@debian.org
+Paolo Molaro <lupus at debian dot org> wrote the original version for
+Gtk-Perl.  muppet <scott at asofyet dot org> rewrote the innards for
+version 0.2, borrowing liberally from Paolo's code.
 
 =head1 MAINTAINER
 

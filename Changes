@@ -1,5 +1,12 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.200 Tue Feb 10 01:21:57 EST 2004
+	- completely rewritten.  attempted to retain backward compatibility,
+	  but some esoteric functionality is probably missing.  now stores
+	  dependency lists, so that module chaining is more useful.
+	- document just about everything.
+	- really, really, really needs a regression test suite.
+
 0.104 Fri Nov 21 01:34:57 EST 2003
 	- remove debian packaging files
 	- add licensing terms to pod.  Depends was originally part of
