@@ -149,10 +149,6 @@ METHODS
             exist when loading files created by old versions of
             ExtUtils::Depends.
 
-        header
-            List of header files. For backwards compatibility, no longer
-            used.
-
     $depends->load_deps
         Load *$depends* dependencies, by calling "load" on each dependency
         module. This is usually done for you, and should only be needed if
