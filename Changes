@@ -1,0 +1,5 @@
+Revision history for Perl extension ExtUtils::Depends.
+
+0.01  Thu Jun 19 01:29:25 CEST 2003
+	- original version; created by extracting it from glib.
+
