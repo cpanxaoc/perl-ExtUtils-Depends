@@ -10,7 +10,7 @@ use Carp;
 use File::Spec;
 use Data::Dumper;
 
-our $VERSION = '0.203';
+our $VERSION = '0.204';
 
 sub import {
 	my $class = shift;
