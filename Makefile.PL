@@ -19,10 +19,13 @@ sub postamble
 	my $cwd = getcwd();
 
 "
+realclean ::
+	-rm -f perl-\$(DISTNAME).spec
+
 rpms/:
 	-mkdir @dirs
 
-perl-\$(DISTNAME).spec: perl-\$(DISTNAME).spec.in
+perl-\$(DISTNAME).spec: perl-\$(DISTNAME).spec.in \$(VERSION_FROM) Makefile
 	sed -e \"s/\@VERSION\@/\$(VERSION)/g\" -e \"s/\@SOURCE\@/\$(DISTNAME)-\$(VERSION).tar.gz/g\" \$< > \$@
 
 dist-rpms: Makefile dist perl-\$(DISTNAME).spec rpms/
