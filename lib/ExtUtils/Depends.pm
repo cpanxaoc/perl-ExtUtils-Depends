@@ -10,7 +10,7 @@ use Carp;
 use File::Spec;
 use Data::Dumper;
 
-our $VERSION = '0.202';
+our $VERSION = '0.203';
 
 sub import {
 	my $class = shift;
@@ -64,8 +64,6 @@ sub set_inc {
 }
 
 sub set_libs {
-	#my $self = shift;
-	#push @{ $self->{libs} }, @_;
 	my ($self, $newlibs) = @_;
 	$self->{libs} = $newlibs;
 }
@@ -285,8 +283,12 @@ sub get_makefile_vars {
 		INC => join (' ', uniquify @incbits),
 		LIBS => join (' ', uniquify @libsbits),
 		TYPEMAPS => [@typemaps],
-		PM => $self->{pm},
 	);
+	# we don't want to provide these if there is no data in them;
+	# that way, the caller can still get default behavior out of
+	# MakeMaker when INC, LIBS and TYPEMAPS are all that are required.
+	$vars{PM} = $self->{pm}
+		if %{ $self->{pm} };
 	$vars{clean} = { FILES => join (" ", @clean), }
 		if @clean;
 	$vars{OBJECT} = join (" ", @OBJECT)

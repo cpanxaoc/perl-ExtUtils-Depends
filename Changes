@@ -1,5 +1,9 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.203 Fri Mar 12 16:09:35 EST 2004
+	- don't output a PM pair from get_makefile_vars unless we actually
+	  have data in the pm key.
+
 0.202 Fri Mar  5 00:26:18 EST 2004
 	- add long-overdue version-checking import implementation.
 	- fixed a bad initial value bug that caused crashes if your setup
