@@ -358,7 +358,7 @@ ExtUtils::Depends - Easily build XS extensions that depend on XS extensions
 	$package->add_xs('module-code.xs');
 	# add the typemaps to use
 	$package->add_typemaps("typemap");
-	# safe the info
+	# save the info
 	$package->save_config('Files.pm');
 
 	WriteMakefile(
