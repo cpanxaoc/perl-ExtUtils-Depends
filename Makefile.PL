@@ -31,17 +31,19 @@ sub postamble
 realclean ::
 	-\$(RM_F) perl-\$(DISTNAME).spec
 
-rpms/:
+RPMS_DIR=\$(HOME)/rpms
+
+\$(RPMS_DIR)/:
 	-mkdir @dirs
 
 SUBSTITUTE=$substitute
 
-perl-\$(DISTNAME).spec: perl-\$(DISTNAME).spec.in \$(VERSION_FROM) Makefile
+perl-\$(DISTNAME).spec :: perl-\$(DISTNAME).spec.in \$(VERSION_FROM) Makefile
 	\$(SUBSTITUTE) \$< > \$@
 
-dist-rpms: Makefile dist perl-\$(DISTNAME).spec rpms/
-	cp \$(DISTNAME)-\$(VERSION).tar.gz rpms/SOURCES/
-	rpmbuild -ba --define \"_topdir $cwd/rpms\" perl-\$(DISTNAME).spec
+dist-rpms :: Makefile dist perl-\$(DISTNAME).spec \$(RPMS_DIR)
+	cp \$(DISTNAME)-\$(VERSION).tar.gz \$(RPMS_DIR)/SOURCES/
+	rpmbuild -ba --define \"_topdir \$(RPMS_DIR)\" perl-\$(DISTNAME).spec
 "
 }
 package MAIN;
