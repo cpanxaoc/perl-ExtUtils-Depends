@@ -14,8 +14,8 @@ package MY;
 use Cwd;
 sub postamble
 {
-	my @dirs = qw{rpms rpms/BUILD rpms/RPMS rpms/SOURCES
-		      rpms/SPECS rpms/SRPMS};
+	my @dirs = qw{$(RPMS_DIR) $(RPMS_DIR)/BUILD $(RPMS_DIR)/RPMS 
+		      $(RPMS_DIR)/SOURCES $(RPMS_DIR)/SPECS $(RPMS_DIR)/SRPMS};
 	my $cwd = getcwd();
 
 	my %subs = (
@@ -41,7 +41,7 @@ SUBSTITUTE=$substitute
 perl-\$(DISTNAME).spec :: perl-\$(DISTNAME).spec.in \$(VERSION_FROM) Makefile
 	\$(SUBSTITUTE) \$< > \$@
 
-dist-rpms :: Makefile dist perl-\$(DISTNAME).spec \$(RPMS_DIR)
+dist-rpms :: Makefile dist perl-\$(DISTNAME).spec \$(RPMS_DIR)/
 	cp \$(DISTNAME)-\$(VERSION).tar.gz \$(RPMS_DIR)/SOURCES/
 	rpmbuild -ba --define \"_topdir \$(RPMS_DIR)\" perl-\$(DISTNAME).spec
 "
