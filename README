@@ -34,12 +34,16 @@ DESCRIPTION
     in the main .pm file) if you need to use functions defined in the
     module.
 
+SEE ALSO
+    ExtUtils::MakeMaker.
+
 AUTHOR
     Paolo Molaro, lupus@debian.org
 
 MAINTAINER
     The Gtk2 project, http://gtk2-perl.sf.net/
 
-SEE ALSO
-    ExtUtils::MakeMaker.
+LICENSE
+    This library is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
 
