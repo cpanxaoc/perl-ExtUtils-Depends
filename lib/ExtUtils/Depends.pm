@@ -10,7 +10,14 @@ use Carp;
 use File::Spec;
 use Data::Dumper;
 
-our $VERSION = '0.201';
+our $VERSION = '0.202';
+
+sub import {
+	my $class = shift;
+	return unless @_;
+        die "$class version $_[0] is required--this is only version $VERSION"
+		if $VERSION < $_[0];
+}
 
 sub new {
 	my ($class, $name, @deps) = @_;

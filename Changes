@@ -1,5 +1,11 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.202 Fri Mar  5 00:26:18 EST 2004
+	- add long-overdue version-checking import implementation.
+	- fixed a bad initial value bug that caused crashes if your setup
+	  did not need a call to set_libs.  [Ross]
+	- distribute the spec file.  [Ross]
+
 0.201 Thu Feb 12 15:33:47 EST 2004
 	- add_headers() is now deprecated.  it's functionality is provided
 	  by install(), and it is already a no-op in 0.200.
