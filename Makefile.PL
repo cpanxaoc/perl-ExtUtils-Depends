@@ -18,15 +18,26 @@ sub postamble
 		      rpms/SPECS rpms/SRPMS};
 	my $cwd = getcwd();
 
+	my %subs = (
+		'VERSION' => '$(VERSION)',
+		'SOURCE' => '$(DISTNAME)-$(VERSION).tar.gz',
+	);
+	
+	my $substitute = '$(PERL) -npe \''.join('; ', map {
+			"s/\\\@$_\\\@/$subs{$_}/g";
+		} keys %subs).'\'';
+
 "
 realclean ::
-	-rm -f perl-\$(DISTNAME).spec
+	-\$(RM_F) perl-\$(DISTNAME).spec
 
 rpms/:
 	-mkdir @dirs
 
+SUBSTITUTE=$substitute
+
 perl-\$(DISTNAME).spec: perl-\$(DISTNAME).spec.in \$(VERSION_FROM) Makefile
-	sed -e \"s/\@VERSION\@/\$(VERSION)/g\" -e \"s/\@SOURCE\@/\$(DISTNAME)-\$(VERSION).tar.gz/g\" \$< > \$@
+	\$(SUBSTITUTE) \$+ > \$@
 
 dist-rpms: Makefile dist perl-\$(DISTNAME).spec rpms/
 	cp \$(DISTNAME)-\$(VERSION).tar.gz rpms/SOURCES/
