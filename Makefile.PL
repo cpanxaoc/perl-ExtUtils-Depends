@@ -47,6 +47,10 @@ perl-\$(DISTNAME).spec :: perl-\$(DISTNAME).spec.in \$(VERSION_FROM) Makefile
 dist-rpms :: Makefile dist perl-\$(DISTNAME).spec \$(RPMS_DIR)/
 	cp \$(DISTNAME)-\$(VERSION).tar.gz \$(RPMS_DIR)/SOURCES/
 	rpmbuild -ba --define \"_topdir \$(RPMS_DIR)\" perl-\$(DISTNAME).spec
+
+dist-srpms :: Makefile dist perl-\$(DISTNAME).spec \$(RPMS_DIR)/
+	cp \$(DISTNAME)-\$(VERSION).tar.gz \$(RPMS_DIR)/SOURCES/
+	rpmbuild -bs --define \"_topdir \$(RPMS_DIR)\" perl-\$(DISTNAME).spec
 "
 }
 package MAIN;
