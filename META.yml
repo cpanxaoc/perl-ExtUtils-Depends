@@ -1,6 +1,6 @@
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         ExtUtils-Depends
-version:      0.102
+version:      unknown
 version_from: lib/ExtUtils/Depends.pm
 installdirs:  site
 requires:
