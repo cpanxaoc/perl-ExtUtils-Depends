@@ -11,7 +11,7 @@ use IO::File;
 use strict;
 use vars qw($AUTOLOAD $VERSION);
 
-$VERSION = 0.102;
+$VERSION = 0.103;
 
 sub new {
 	my ($class, $package, @depends) = @_;

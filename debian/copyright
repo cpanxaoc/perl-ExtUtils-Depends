@@ -1,0 +1,11 @@
+This is the debian package for the ExtUtils::Depends module.
+It was created by James Curbo <James Curbo <hannibal@adtrw.org>> using dh-make-perl.
+
+This module was downloaded from http://gtk2-perl.sf.net/
+
+The upstream author is: 
+	Paolo Molaro, lupus@debian.org.
+
+This module is licensed under the GPLv2, available on Debian systems
+in /usr/share/common-licenses/GPL
+

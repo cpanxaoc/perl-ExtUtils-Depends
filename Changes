@@ -1,5 +1,8 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.103 Fri Aug 15 09:59:42 EDT 2003
+	- add files for maintaining debian packages.
+
 0.102 Tue Jul  8 14:10:29 EDT 2003
 	- use File::Spec->file_name_is_absolute instead of non-portable m{^/}.
 	  still uses direct string manipulation on paths, but this fix lets
