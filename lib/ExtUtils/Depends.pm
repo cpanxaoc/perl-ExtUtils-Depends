@@ -114,7 +114,7 @@ sub save_config {
 	use IO::File;
 
 	my ($self, $filename) = @_;
-	warn "writing $filename\n";
+	warn "Writing $filename\n";
 
 	my $file = IO::File->new (">".$filename)
 		or croak "can't open '$filename' for writing: $!\n";
@@ -179,10 +179,10 @@ sub load {
 	
 	no strict;
 
-	croak "no dependency information found for $dep"
+	croak "No dependency information found for $dep"
 		unless $instpath;
 
-	warn "found $dep in $instpath\n";
+	warn "Found $dep in $instpath\n";
 
 	if (not File::Spec->file_name_is_absolute ($instpath)) {
 		warn "instpath is not absolute; using cwd...\n";

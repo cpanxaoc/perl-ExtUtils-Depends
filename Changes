@@ -1,5 +1,9 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.204 Sun Sep 19 23:26:23 CEST 2004
+	- Use capitals at the start of everything that is printed out, to unify
+	  Makefile.PL output.
+
 0.203 Fri Mar 12 16:09:35 EST 2004
 	- don't output a PM pair from get_makefile_vars unless we actually
 	  have data in the pm key.
@@ -43,4 +47,3 @@ Revision history for Perl extension ExtUtils::Depends.
 
 0.1   Thu Jun 19 01:29:25 CEST 2003
 	- original version; created by extracting it from glib.
-
