@@ -1,8 +1,9 @@
-Makefile.PL
 Changes
-lib/ExtUtils/Depends.pm
-t/01_load.t
-META.yml
-MANIFEST
 .cvsignore
+lib/ExtUtils/Depends.pm
+Makefile.PL
+MANIFEST
+META.yml
+perl-ExtUtils-Depends.spec.in
 README
+t/01_load.t

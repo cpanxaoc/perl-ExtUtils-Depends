@@ -18,7 +18,7 @@ sub new {
 		name => $name,
 		deps => {},
 		inc => [],
-		libs => [],
+		libs => '',
 
 		pm => {},
 		typemaps => [],
