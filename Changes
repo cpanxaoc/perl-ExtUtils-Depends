@@ -1,5 +1,10 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.104 Fri Nov 21 01:34:57 EST 2003
+	- remove debian packaging files
+	- add licensing terms to pod.  Depends was originally part of
+	  gtk-perl, which itself bore this copyright notice.
+
 0.103 Fri Aug 15 09:59:42 EDT 2003
 	- add files for maintaining debian packages.
 

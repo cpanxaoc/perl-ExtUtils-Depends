@@ -11,7 +11,7 @@ use IO::File;
 use strict;
 use vars qw($AUTOLOAD $VERSION);
 
-$VERSION = 0.103;
+$VERSION = 0.104;
 
 sub new {
 	my ($class, $package, @depends) = @_;
@@ -381,6 +381,10 @@ flag (usually done with a
 
 in the main .pm file) if you need to use functions defined in the module.
 
+=head1 SEE ALSO
+
+ExtUtils::MakeMaker.
+
 =head1 AUTHOR
 
 Paolo Molaro, lupus@debian.org
@@ -389,9 +393,10 @@ Paolo Molaro, lupus@debian.org
 
 The Gtk2 project, http://gtk2-perl.sf.net/
 
-=head1 SEE ALSO
+=head1 LICENSE
 
-ExtUtils::MakeMaker.
+This library is free software; you may redistribute it and/or modify it
+under the same terms as Perl itself.
 
 =cut
 
