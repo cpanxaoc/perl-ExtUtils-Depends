@@ -1,5 +1,13 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.201 Thu Feb 12 15:33:47 EST 2004
+	- add_headers() is now deprecated.  it's functionality is provided
+	  by install(), and it is already a no-op in 0.200.
+	- remove code referring to @headers, since we don't actually keep a
+	  separate list of headers anymore.  (should we?)
+	- load() no longer returns the "header" key -- it should've been
+	  "headers", but i've simply removed all that code.
+
 0.200 Tue Feb 10 01:21:57 EST 2004
 	- completely rewritten.  attempted to retain backward compatibility,
 	  but some esoteric functionality is probably missing.  now stores
