@@ -1,5 +1,8 @@
 Revision history for Perl extension ExtUtils::Depends.
 
-0.1  Thu Jun 19 01:29:25 CEST 2003
+0.101 Fri Jun 20 23:37:19 CEST 2003
+	- added primitive load-only testsuite.
+
+0.1   Thu Jun 19 01:29:25 CEST 2003
 	- original version; created by extracting it from glib.
 
