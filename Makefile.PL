@@ -14,6 +14,10 @@ package MY;
 use Cwd;
 sub postamble
 {
+	# none of this rpm stuff is useful on win32, and actually it can cause
+	# nmake to barf.
+	return @_ if $^O eq 'MSWin32';
+
 	my @dirs = qw{$(RPMS_DIR) $(RPMS_DIR)/BUILD $(RPMS_DIR)/RPMS 
 		      $(RPMS_DIR)/SOURCES $(RPMS_DIR)/SPECS $(RPMS_DIR)/SRPMS};
 	my $cwd = getcwd();
