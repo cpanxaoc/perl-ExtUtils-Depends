@@ -10,7 +10,7 @@ use Carp;
 use File::Spec;
 use Data::Dumper;
 
-our $VERSION = '0.200';
+our $VERSION = '0.201';
 
 sub new {
 	my ($class, $name, @deps) = @_;
@@ -84,7 +84,8 @@ sub add_typemaps {
 	$self->install (@_);
 }
 
-sub add_headers { }
+# no-op, only used for source back-compat
+sub add_headers { carp "add_headers() is a no-op" }
 
 ####### PRIVATE
 sub basename { (File::Spec->splitdir ($_[0]))[-1] }
@@ -125,7 +126,6 @@ sub save_config {
 	print $file "\n\n# this is for backwards compatiblity\n";
 	print $file "\@deps = \@{ \$self->{deps} };\n";
 	print $file "\@typemaps = \@{ \$self->{typemaps} };\n";
-	print $file "\@headers = \@{ \$self->{headers} };\n";
 	print $file "\$libs = \$self->{libs};\n";
 	print $file "\$inc = \$self->{inc};\n";
 	# this is riduculous, but old versions of ExtUtils::Depends take
@@ -190,7 +190,6 @@ sub load {
 
 	{
 		instpath => $instpath,
-		header   => \@{"$depinstallfiles\::header"},
 		typemaps => \@typemaps,
 		inc      => "-I$instpath ".${"$depinstallfiles\::inc"},
 		libs     => ${"$depinstallfiles\::libs"},
@@ -470,10 +469,6 @@ LIBS string for this module.
 
 List of modules on which this one depends.  This key will not exist when
 loading files created by old versions of ExtUtils::Depends.
-
-=item header
-
-List of header files.  For backwards compatibility, no longer used.
 
 =back
 
