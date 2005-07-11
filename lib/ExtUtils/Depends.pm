@@ -285,7 +285,7 @@ sub get_makefile_vars {
 		#LIBS => join (' ', uniquify $self->find_extra_libs, @libsbits),
 		TYPEMAPS => [@typemaps],
 	);
-	push @OBJECT, $self->find_extra_libs;
+	#push @OBJECT, $self->find_extra_libs;
 	# we don't want to provide these if there is no data in them;
 	# that way, the caller can still get default behavior out of
 	# MakeMaker when INC, LIBS and TYPEMAPS are all that are required.

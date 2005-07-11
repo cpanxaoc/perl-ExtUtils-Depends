@@ -2,6 +2,9 @@ Revision history for Perl extension ExtUtils::Depends.
 
 0.--- Mon Apr  4 22:49:35 EDT 2005
 	- Correct a typo in the synopsis.
+	- In get_makefile_vars, comment out the code that put the installed
+	  libraries into @OBJECT, which caused them to get deleted on
+	  realclean.
 
 0.205 Sun Jan 23 13:20:14 EST 2005
 	- Disable the RPM-related postamble on Win32.  The 'date' command
