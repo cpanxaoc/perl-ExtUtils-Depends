@@ -10,9 +10,9 @@ WriteMakefile(
     'VERSION_FROM' => 'lib/ExtUtils/Depends.pm',
 );
 
-package MY;
 use Cwd;
-sub postamble
+
+sub MY::postamble
 {
 	# none of this rpm stuff is useful on win32, and actually it can cause
 	# nmake to barf.
@@ -29,7 +29,7 @@ sub postamble
 		'SOURCE' => '$(DISTNAME)-$(VERSION).tar.gz',
 		'DATE'    => $date,
 	);
-	
+
 	my $substitute = '$(PERL) -npe \''.join('; ', map {
 			"s/\\\@$_\\\@/$subs{$_}/g";
 		} keys %subs).'\'';
@@ -57,4 +57,3 @@ dist-srpms :: Makefile dist perl-\$(DISTNAME).spec \$(RPMS_DIR)/
 	rpmbuild -bs --define \"_topdir \$(RPMS_DIR)\" perl-\$(DISTNAME).spec
 "
 }
-package MAIN;

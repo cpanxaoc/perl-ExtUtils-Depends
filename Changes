@@ -5,6 +5,7 @@ Revision history for Perl extension ExtUtils::Depends.
 	- In get_makefile_vars, comment out the code that put the installed
 	  libraries into @OBJECT, which caused them to get deleted on
 	  realclean.
+	- In Makefile.PL, don't use the bogus package "MAIN".
 
 0.205 Sun Jan 23 13:20:14 EST 2005
 	- Disable the RPM-related postamble on Win32.  The 'date' command
