@@ -1,6 +1,6 @@
 Revision history for Perl extension ExtUtils::Depends.
 
-0.--- Sun Mar 30 17:29:35 CEST 2008
+0.300 Sun Mar 30 17:35:35 CEST 2008
 	- On MSWin32 and cygwin, find the link libraries of dependencies and
           put them into LIBS.
 	- Add tests.
