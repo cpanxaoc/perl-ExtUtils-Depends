@@ -7,6 +7,7 @@ package ExtUtils::Depends;
 use strict;
 use warnings;
 use Carp;
+use File::Find;
 use File::Spec;
 use Data::Dumper;
 
@@ -114,7 +115,6 @@ sub save_config {
 	use IO::File;
 
 	my ($self, $filename) = @_;
-	warn "Writing $filename\n";
 
 	my $file = IO::File->new (">".$filename)
 		or croak "can't open '$filename' for writing: $!\n";
@@ -182,10 +182,7 @@ sub load {
 	croak "No dependency information found for $dep"
 		unless $instpath;
 
-	warn "Found $dep in $instpath\n";
-
 	if (not File::Spec->file_name_is_absolute ($instpath)) {
-		warn "instpath is not absolute; using cwd...\n";
 		$instpath = File::Spec->rel2abs ($instpath);
 	}
 
@@ -281,11 +278,10 @@ sub get_makefile_vars {
 
 	my %vars = (
 		INC => join (' ', uniquify @incbits),
-		LIBS => join (' ', uniquify @libsbits),
-		#LIBS => join (' ', uniquify $self->find_extra_libs, @libsbits),
+		LIBS => join (' ', uniquify $self->find_extra_libs, @libsbits),
 		TYPEMAPS => [@typemaps],
 	);
-	#push @OBJECT, $self->find_extra_libs;
+
 	# we don't want to provide these if there is no data in them;
 	# that way, the caller can still get default behavior out of
 	# MakeMaker when INC, LIBS and TYPEMAPS are all that are required.
@@ -301,39 +297,36 @@ sub get_makefile_vars {
 	%vars;
 }
 
-#  %Config     linux      win32      darwin
-#   lib_ext     .a          .a         .a
-#     so        so         dll       dylib
-#    dlext      so         dll       bundle
 sub find_extra_libs {
 	my $self = shift;
-	use File::Find;
-	use Config;
-	my @ret = ();
-	my $ext = $Config{so};
-	warn "on $^O, looking for extra '$ext\'s with which to link\n";
-	#my $ext = $Config{dlext};
-	# XXX what about linkage order?  these should be in the most-dependent
-	# first order, for old-style linkers...  but when we get the dep names
-	# from the hash, we have no idea about order.
+
+	my %mappers = (
+		MSWin32 => sub { $_[0] . '.lib' },
+		cygwin  => sub { 'lib' . $_[0] . '.dll.a'},
+	);
+	my $mapper = $mappers{$^O};
+	return () unless defined $mapper;
+
+	my @found_libs = ();
 	foreach my $name (keys %{ $self->{deps} }) {
-		my $dep = $self->{deps}{$name};
-		(my $dllname = $name) =~ s/^.*:://;
-		my $match = qr/$dllname\.$ext$/;
-		my $l;
+		(my $stem = $name) =~ s/^.*:://;
+		my $lib = $mapper->($stem);
+		my $pattern = qr/$lib$/;
+
+		my $matching_file;
 		find (sub {
-			$l = $File::Find::name
-				if (not $l) && /$match/;
+			if ((not $matching_file) && /$pattern/) {;
+				$matching_file = $File::Find::name;
+			}
 		}, map { -d $_ ? ($_) : () } @INC); # only extant dirs
-		if ($l && -f $l) {
-			warn "found $l\n";
-			push @ret, $l;
+
+		if ($matching_file && -f $matching_file) {
+			push @found_libs, $matching_file;
 			next;
 		}
-		warn "can't find $dllname\.$ext for $name\n";
 	}
-	#print Dumper(\@ret);
-	return @ret;
+
+	return @found_libs;
 }
 
 1;
@@ -446,7 +439,7 @@ Add xs files to be compiled.
 
 Add C files to be compiled.
 
-=item $depends->typemaps (@typemaps)
+=item $depends->add_typemaps (@typemaps)
 
 Add typemap files to be used and installed.
 
@@ -528,11 +521,6 @@ C<get_deps> after calling C<add_deps> manually.
 
 
 =head1 BUGS
-
-As written, this module expects that RTLD_GLOBAL works on your platform,
-which is not always true, most notably, on win32.  We need to include a
-way to find the actual shared libraries created for extension modules
-so new extensions may be linked explicitly with them.
 
 Version 0.2 discards some of the more esoteric features provided by the
 older versions.  As they were completely undocumented, and this module

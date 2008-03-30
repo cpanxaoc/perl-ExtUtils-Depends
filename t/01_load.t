@@ -1,4 +1,6 @@
-use Test;
-BEGIN { plan tests => 1 }
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Test::More tests => 1;
 
-use ExtUtils::Depends; ok(1);
+use_ok ('ExtUtils::Depends');
