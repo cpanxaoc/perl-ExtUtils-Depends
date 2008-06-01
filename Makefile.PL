@@ -1,3 +1,8 @@
+#!/usr/bin/perl
+
+# We require 5.6 for sanity in general, and for 'our' in particular.
+use 5.006;
+
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
