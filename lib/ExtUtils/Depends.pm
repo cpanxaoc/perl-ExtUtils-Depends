@@ -302,7 +302,7 @@ sub find_extra_libs {
 
 	my %mappers = (
 		MSWin32 => sub { $_[0] . '.lib' },
-		cygwin  => sub { 'lib' . $_[0] . '.dll.a'},
+		cygwin  => sub { $_[0] . '.dll'},
 	);
 	my $mapper = $mappers{$^O};
 	return () unless defined $mapper;
@@ -313,15 +313,17 @@ sub find_extra_libs {
 		my $lib = $mapper->($stem);
 		my $pattern = qr/$lib$/;
 
+		my $matching_dir;
 		my $matching_file;
 		find (sub {
 			if ((not $matching_file) && /$pattern/) {;
+				$matching_dir = $File::Find::dir;
 				$matching_file = $File::Find::name;
 			}
 		}, map { -d $_ ? ($_) : () } @INC); # only extant dirs
 
 		if ($matching_file && -f $matching_file) {
-			push @found_libs, $matching_file;
+			push @found_libs, ('-L' . $matching_dir, '-l' . $stem);
 			next;
 		}
 	}
