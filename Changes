@@ -1,6 +1,6 @@
 Revision history for Perl extension ExtUtils::Depends.
 
-0.xxx <date>
+0.301 Sat Sep  6 20:11:01 CEST 2008
 	- On Cygwin, link directly against the DLLs of dependencies.  Patch by
           Yaakov.
 	- Require perl 5.6.0.
