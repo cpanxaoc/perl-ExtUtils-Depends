@@ -1,5 +1,5 @@
 #
-# $Header$
+# $Id$
 #
 
 package ExtUtils::Depends;
