@@ -1,0 +1,5 @@
+^blib
+^MAINTAINERS$
+^Makefile$
+^pm_to_blib$
+^\.git
