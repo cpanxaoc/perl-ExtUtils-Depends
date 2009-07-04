@@ -282,6 +282,8 @@ sub get_makefile_vars {
 		TYPEMAPS => [@typemaps],
 	);
 
+	$self->build_dll_lib(\%vars) if $^O =~ /MSWin32/;
+
 	# we don't want to provide these if there is no data in them;
 	# that way, the caller can still get default behavior out of
 	# MakeMaker when INC, LIBS and TYPEMAPS are all that are required.
@@ -297,12 +299,19 @@ sub get_makefile_vars {
 	%vars;
 }
 
+sub build_dll_lib {
+	my ($self, $vars) = @_;
+	$vars->{macro} ||= {};
+	$vars->{macro}{'INST_DYNAMIC_LIB'} =
+		'$(INST_ARCHAUTODIR)/$(BASEEXT)$(LIB_EXT)';
+}
+
 sub find_extra_libs {
 	my $self = shift;
 
 	my %mappers = (
-		MSWin32 => sub { $_[0] . '.lib' },
-		cygwin  => sub { $_[0] . '.dll'},
+		MSWin32 => sub { $_[0] . '\.(?:lib|a)' },
+		cygwin	=> sub { $_[0] . '\.dll'},
 	);
 	my $mapper = $mappers{$^O};
 	return () unless defined $mapper;
@@ -329,6 +338,25 @@ sub find_extra_libs {
 	}
 
 	return @found_libs;
+}
+
+# Hook into ExtUtils::MakeMaker to create an import library on MSWin32 when gcc
+# is used.  FIXME: Ideally, this should be done in EU::MM itself.
+package # wrap to fool the CPAN indexer
+	ExtUtils::MM;
+use Config;
+sub static_lib {
+	my $base = shift->SUPER::static_lib(@_);
+
+	return $base unless $^O =~ /MSWin32/ && $Config{cc} =~ /^gcc/i;
+
+	return <<'__EOM__';
+# This isn't actually a static lib, it just has the same name on Win32.
+$(INST_DYNAMIC_LIB): $(INST_DYNAMIC)
+	dlltool --def $(EXPORT_LIST) --output-lib $@ --dllname $(BASEEXT).$(SO) $(INST_DYNAMIC)
+
+dynamic:: $(INST_DYNAMIC_LIB)
+__EOM__
 }
 
 1;

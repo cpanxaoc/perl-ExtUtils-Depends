@@ -29,6 +29,9 @@ WriteMakefile(
 			repository => 'http://git.gnome.org/cgit/perl-ExtUtils-Depends',
 		},
 		keywords => ['XS', 'XS extensions', 'dependency'],
+		no_index => {
+			package => 'ExtUtils::MM',
+		},
 	},
 	LICENSE => 'perl',
 );
