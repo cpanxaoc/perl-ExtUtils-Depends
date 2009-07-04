@@ -1,5 +1,9 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.302 Sat Jul  4 15:28:35 CEST 2009
+	- Create import libraries if necessary to fix linking when gcc is used
+	  on MSWin32 (Strawberry Perl, for example).
+
 0.301 Sat Sep  6 20:11:01 CEST 2008
 	- On Cygwin, link directly against the DLLs of dependencies.  Patch by
           Yaakov.
