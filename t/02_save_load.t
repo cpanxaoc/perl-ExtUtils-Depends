@@ -3,7 +3,14 @@ use strict;
 use warnings;
 
 use Test::More tests => 24;
+
+use FindBin;
+use lib "$FindBin::Bin/lib";
+use TestHelper;
+
 use ExtUtils::Depends;
+
+my $tmp_inc = temp_inc;
 
 my $dep_info = ExtUtils::Depends->new ('DepTest');
 
@@ -33,7 +40,7 @@ my @installed_files = qw(dep.h
                          dep-private.h);
 $dep_info->install (@installed_files);
 
-$dep_info->save_config ('t/inc/DepTest/Install/Files.pm');
+$dep_info->save_config (catfile $tmp_inc, qw(DepTest Install Files.pm));
 
 # --------------------------------------------------------------------------- #
 
@@ -46,7 +53,7 @@ foreach my $pm (keys %pm_mapping) {
   like ($vars{PM}{$pm}, qr/\Q$pm_mapping{$pm}\E/);
 }
 
-ok (exists $vars{PM}{'t/inc/DepTest/Install/Files.pm'});
+ok (exists $vars{PM}{catfile $tmp_inc, qw(DepTest Install Files.pm)});
 
 foreach my $file (@installed_files) {
   like ($vars{PM}{$file}, qr/\Q$file\E/);
@@ -64,8 +71,6 @@ foreach my $file (@c_files, @xs_files) {
 
 # --------------------------------------------------------------------------- #
 
-use lib qw(t/inc);
-
 my $info = ExtUtils::Depends::load ('DepTest');
 
 my $install_part = qr|DepTest.Install|;
@@ -81,5 +86,3 @@ is_deeply ($info->{deps}, []);
 is ($info->{libs}, $libs);
 
 # --------------------------------------------------------------------------- #
-
-unlink 't/inc/DepTest/Install/Files.pm';

@@ -3,14 +3,19 @@ use strict;
 use warnings;
 
 use Test::More tests => 2;
+
+use FindBin;
+use lib "$FindBin::Bin/lib";
+use TestHelper;
+
 use ExtUtils::Depends;
 
+my $tmp_inc = temp_inc;
+
 my $dep_info = ExtUtils::Depends->new ('DepTest');
-$dep_info->save_config ('t/inc/DepTest/Install/Files.pm');
+$dep_info->save_config (catfile $tmp_inc, qw(DepTest Install Files.pm));
 
 # --------------------------------------------------------------------------- #
-
-use lib qw(t/inc);
 
 my $info = ExtUtils::Depends->new ('UseTest', 'DepTest');
 
@@ -27,5 +32,3 @@ $info->load_deps;
 ok (exists $deps{DepTest});
 
 # --------------------------------------------------------------------------- #
-
-unlink 't/inc/DepTest/Install/Files.pm';
