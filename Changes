@@ -1,5 +1,8 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.303 Mon Nov 29 19:42:59 CET 2010
+	- Fix a race condition when running the tests in parallel.
+
 0.302 Sat Jul  4 15:28:35 CEST 2009
 	- Create import libraries if necessary to fix linking when gcc is used
 	  on MSWin32 (Strawberry Perl, for example).
