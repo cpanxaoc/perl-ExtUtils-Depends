@@ -14,3 +14,4 @@ t/inc/DepTest/DepTest.dll
 t/inc/DepTest/DepTest.lib
 t/inc/DepTest/Install/.keep
 t/inc/DepTest/libDepTest.dll.a
+t/lib/TestHelper.pm
