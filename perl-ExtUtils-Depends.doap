@@ -24,4 +24,12 @@
     </foaf:Person>
   </maintainer>
 
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Florian Ragwitz</foaf:name>
+      <foaf:mbox rdf:resource="mailto:rafl@debian.org" />
+      <gnome:userid>rafl</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
 </Project>
