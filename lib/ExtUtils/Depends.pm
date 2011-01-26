@@ -350,12 +350,14 @@ sub static_lib {
 
 	return $base unless $^O =~ /MSWin32/ && $Config{cc} =~ /\bgcc\b/i;
 
-	return <<'__EOM__';
-# This isn't actually a static lib, it just has the same name on Win32.
-$(INST_DYNAMIC_LIB): $(INST_DYNAMIC)
-	dlltool --def $(EXPORT_LIST) --output-lib $@ --dllname $(BASEEXT).$(SO) $(INST_DYNAMIC)
+	my $DLLTOOL = $Config{'dlltool'} || 'dlltool';
 
-dynamic:: $(INST_DYNAMIC_LIB)
+	return <<"__EOM__"
+# This isn't actually a static lib, it just has the same name on Win32.
+\$(INST_DYNAMIC_LIB): \$(INST_DYNAMIC)
+	$DLLTOOL --def \$(EXPORT_LIST) --output-lib \$\@ --dllname \$(BASEEXT).\$(SO) \$(INST_DYNAMIC)
+
+dynamic:: \$(INST_DYNAMIC_LIB)
 __EOM__
 }
 
