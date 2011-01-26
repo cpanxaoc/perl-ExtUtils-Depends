@@ -1,5 +1,11 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.304 Wed Jan 26 08:48:18 CET 2011
+	- More robust detection of gcc toolchains on Win32
+	  (Closes: RT#62455) (sisyphus).
+	- Don't assume dlltool is called 'dlltool' on Win32+gcc. Ask Config.pm
+	  instead (Closes: RT#62455) (sisyphus).
+
 0.303 Mon Nov 29 19:42:59 CET 2010
 	- Fix a race condition when running the tests in parallel.
 
