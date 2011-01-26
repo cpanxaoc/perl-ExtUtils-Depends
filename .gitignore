@@ -1,5 +1,6 @@
 blib
-Makefile
+Makefile*
+!Makefile.PL
 pm_to_blib
 MANIFEST*
 !Manifest.SKIP
