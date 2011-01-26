@@ -348,7 +348,7 @@ use Config;
 sub static_lib {
 	my $base = shift->SUPER::static_lib(@_);
 
-	return $base unless $^O =~ /MSWin32/ && $Config{cc} =~ /^gcc/i;
+	return $base unless $^O =~ /MSWin32/ && $Config{cc} =~ /\bgcc\b/i;
 
 	return <<'__EOM__';
 # This isn't actually a static lib, it just has the same name on Win32.
