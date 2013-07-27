@@ -133,7 +133,7 @@ sub save_config {
 	print $file "\@typemaps = \@{ \$self->{typemaps} };\n";
 	print $file "\$libs = \$self->{libs};\n";
 	print $file "\$inc = \$self->{inc};\n";
-	# this is riduculous, but old versions of ExtUtils::Depends take
+	# this is ridiculous, but old versions of ExtUtils::Depends take
 	# first $loadedmodule::CORE and then $INC{$file} --- the fallback
 	# includes the Filename.pm, which is not useful.  so we must add
 	# this crappy code.  we don't worry about portable pathnames,
