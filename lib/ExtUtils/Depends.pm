@@ -306,6 +306,9 @@ sub build_dll_lib {
 		'$(INST_ARCHAUTODIR)/$(BASEEXT)$(LIB_EXT)';
 }
 
+# Search for extra library files to link against on Windows (either native
+# Windows library # files, or Cygwin library files)
+# NOTE: not meant to be called publicly, so no POD documentation
 sub find_extra_libs {
 	my $self = shift;
 
