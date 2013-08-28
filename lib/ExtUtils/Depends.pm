@@ -402,7 +402,7 @@ that a perl extension is treated like a shared library that provides
 also a C and an XS interface besides the perl one.
 
 This works as long as the base extension is loaded with the RTLD_GLOBAL
-flag (usually done with a 
+flag (usually done with a
 
 	sub dl_load_flags {0x01}
 
@@ -554,14 +554,48 @@ C<get_deps> after calling C<add_deps> manually.
 
 =back
 
+=head1 SUPPORT
 
-=head1 BUGS
+=head2 Bugs/Feature Requests
 
 Version 0.2 discards some of the more esoteric features provided by the
 older versions.  As they were completely undocumented, and this module
 has yet to reach 1.0, this may not exactly be a bug.
 
 This module is tightly coupled to the ExtUtils::MakeMaker architecture.
+
+You can submit new bugs/feature requests by using one of two bug trackers
+(below).
+
+=over
+
+=item CPAN Request Tracker
+
+You can submit bugs/feature requests via the web by going to
+L<https://rt.cpan.org/Public/Bug/Report.html?Queue=ExtUtils-Depends> (requires
+PAUSE ID or Bitcard), or by sending an e-mail to
+L<bug-ExtUtils-Depends at rt.cpan.org>.
+
+=item Gnome.org Bugzilla
+
+Report bugs/feature requests to the 'gnome-perl' product (requires login)
+L<http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-perl>
+
+=back
+
+Patches that implement new features with test cases, and/or test cases that
+exercise existing bugs are always welcome.
+
+The Gtk-Perl mailing list is at L<gtk-perl-list at gnome dot org>.
+
+=head2 Source Code
+
+The source code to L<ExtUtils::Depends> is available at the Gnome.org Git repo
+(L<https://git.gnome.org/browse/perl-ExtUtils-Depends/>).  Create your own
+copy of the Git repo with:
+
+  git clone git://git.gnome.org/perl-ExtUtils-Depends (Git protocol)
+  git clone https://git.gnome.org/browse/perl-ExtUtils-Depends/ (HTTPS)
 
 =head1 SEE ALSO
 
@@ -575,7 +609,7 @@ version 0.2, borrowing liberally from Paolo's code.
 
 =head1 MAINTAINER
 
-The Gtk2 project, http://gtk2-perl.sf.net/
+The Gtk2 project, L<http://gtk2-perl.sf.net>/L<gtk-perl-list at gnome dot org>.
 
 =head1 LICENSE
 
