@@ -154,12 +154,39 @@ METHODS
         module. This is usually done for you, and should only be needed if
         you want to call "get_deps" after calling "add_deps" manually.
 
-BUGS
+SUPPORT
+  Bugs/Feature Requests
     Version 0.2 discards some of the more esoteric features provided by the
     older versions. As they were completely undocumented, and this module
     has yet to reach 1.0, this may not exactly be a bug.
 
     This module is tightly coupled to the ExtUtils::MakeMaker architecture.
+
+    You can submit new bugs/feature requests by using one of two bug
+    trackers (below).
+
+    CPAN Request Tracker
+        You can submit bugs/feature requests via the web by going to
+        <https://rt.cpan.org/Public/Bug/Report.html?Queue=ExtUtils-Depends>
+        (requires PAUSE ID or Bitcard), or by sending an e-mail to
+        "bug-ExtUtils-Depends at rt.cpan.org".
+
+    Gnome.org Bugzilla
+        Report bugs/feature requests to the 'gnome-perl' product (requires
+        login) <http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-perl>
+
+    Patches that implement new features with test cases, and/or test cases
+    that exercise existing bugs are always welcome.
+
+    The Gtk-Perl mailing list is at "gtk-perl-list at gnome dot org".
+
+  Source Code
+    The source code to ExtUtils::Depends is available at the Gnome.org Git
+    repo (<https://git.gnome.org/browse/perl-ExtUtils-Depends/>). Create
+    your own copy of the Git repo with:
+
+      git clone git://git.gnome.org/perl-ExtUtils-Depends (Git protocol)
+      git clone https://git.gnome.org/browse/perl-ExtUtils-Depends/ (HTTPS)
 
 SEE ALSO
     ExtUtils::MakeMaker.
@@ -170,7 +197,8 @@ AUTHOR
     version 0.2, borrowing liberally from Paolo's code.
 
 MAINTAINER
-    The Gtk2 project, http://gtk2-perl.sf.net/
+    The Gtk2 project, <http://gtk2-perl.sf.net>/"gtk-perl-list at gnome dot
+    org".
 
 LICENSE
     This library is free software; you may redistribute it and/or modify it
