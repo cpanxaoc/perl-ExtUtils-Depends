@@ -4,6 +4,58 @@
 use 5.006;
 
 use ExtUtils::MakeMaker;
+my %prereqs = (
+	'File::Spec' => 0,
+	'Data::Dumper' => 0,
+	'IO::File' => 0,
+);
+
+my %meta_merge = (
+    q(meta-spec)          => {
+        version => '2',
+        url     => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec',
+    },
+    author              =>
+        ['Gtk2-Perl Team <gtk-perl-list at gnome dot org>'],
+    release_status      => 'stable',
+    # valid values: https://metacpan.org/module/CPAN::Meta::Spec#license
+    license             => 'perl_5',
+    resources => {
+        license     => 'http://dev.perl.org/licenses/',
+        homepage    => 'http://gtk2-perl.sourceforge.net',
+        x_MailingList =>
+            'https://mail.gnome.org/mailman/listinfo/gtk-perl-list',
+        bugtracker  => {
+            web     =>
+            'http://rt.cpan.org/Public/Dist/Display.html?Name=ExtUtils-Depens',
+            mailto  => 'bug-ExtUtils-Depends [at] rt.cpan.org',
+        },
+        repository  => {
+            url     => 'git://git.gnome.org/perl-ExtUtils-Depends',
+            type    => 'git',
+            web     => 'http://git.gnome.org/browse/perl-ExtUtils-Depends',
+        },
+    },
+    prereqs => {
+        configure => {
+            requires => {%prereqs}, # no direct ref for 5.14 compatibility
+        },
+        build => {
+            requires => {
+                'Test::More' => 0,
+            },
+        },
+        test => {
+            recommends => {
+                'Test::Number::Delta' => 1.0,
+            },
+        },
+    },
+    keywords => ['XS', 'XS extensions', 'dependency'],
+    no_index            => {
+        package => 'ExtUtils::MM',
+    },
+);
 
 WriteMakefile(
 	dist => {
@@ -15,24 +67,9 @@ WriteMakefile(
 	},
 	NAME => 'ExtUtils::Depends',
 	VERSION_FROM => 'lib/ExtUtils/Depends.pm',
-	PREREQ_PM => {
-		'File::Spec' => 0,
-		'Data::Dumper' => 0,
-		'IO::File' => 0,
-	},
+	PREREQ_PM => \%prereqs,
 	MIN_PERL_VERSION => 5.006, #for META.yml
-	META_MERGE => {
-		build_requires => {
-			'Test::More' => 0,
-		},
-		resources => {
-			repository => 'http://git.gnome.org/cgit/perl-ExtUtils-Depends',
-		},
-		keywords => ['XS', 'XS extensions', 'dependency'],
-		no_index => {
-			package => 'ExtUtils::MM',
-		},
-	},
+	META_MERGE => \%meta_merge,
 	LICENSE => 'perl',
 );
 
