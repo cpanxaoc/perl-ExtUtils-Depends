@@ -1,5 +1,12 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.305 Mon Sep  2 14:16:58 PDT 2013
+    - Makefile.PL: converted to CPAN::Meta::Spec v2
+    - Updated license in RPM spec file; closes RT#88196
+    - Updated contact info and added git repo info to POD
+    - Add comments for find_extra_libs method (closes RT#43900)
+    - Fixed typo (closes RT#86572)
+
 0.304 Wed Jan 26 08:48:18 CET 2011
 	- More robust detection of gcc toolchains on Win32
 	  (Closes: RT#62455) (sisyphus).
