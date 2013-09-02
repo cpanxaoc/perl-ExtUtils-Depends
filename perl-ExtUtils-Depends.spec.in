@@ -3,7 +3,7 @@ Name: perl-ExtUtils-Depends
 Version: @VERSION@
 Release: 1
 Packager: gtk-perl-list@gnome.org
-License: LGPL
+License: Perl
 Group: Development/Tools
 URL: http://search.cpan.org/dist/ExtUtils-Depends/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
