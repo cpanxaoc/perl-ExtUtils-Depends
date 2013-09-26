@@ -27,7 +27,7 @@ my %meta_merge = (
             'https://mail.gnome.org/mailman/listinfo/gtk-perl-list',
         bugtracker  => {
             web     =>
-            'http://rt.cpan.org/Public/Dist/Display.html?Name=ExtUtils-Depens',
+                'http://rt.cpan.org/Public/Dist/Display.html?Name=ExtUtils-Depends',
             mailto  => 'bug-ExtUtils-Depends [at] rt.cpan.org',
         },
         repository  => {
