@@ -112,6 +112,7 @@ sub install {
 
 sub save_config {
 	use Data::Dumper;
+	local $Data::Dumper::Terse = 0;
 	use IO::File;
 
 	my ($self, $filename) = @_;

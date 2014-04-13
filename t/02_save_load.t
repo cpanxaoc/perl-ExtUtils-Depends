@@ -40,6 +40,8 @@ my @installed_files = qw(dep.h
                          dep-private.h);
 $dep_info->install (@installed_files);
 
+use Data::Dumper;
+$Data::Dumper::Terse = 1;
 $dep_info->save_config (catfile $tmp_inc, qw(DepTest Install Files.pm));
 
 # --------------------------------------------------------------------------- #
@@ -75,9 +77,13 @@ my $info = ExtUtils::Depends::load ('DepTest');
 
 my $install_part = qr|DepTest.Install|;
 like ($info->{inc}, $install_part);
-ok (-1 != index $info->{inc}, $inc);
+isnt (index($info->{inc}, $inc), -1);
 
-isa_ok ($info->{typemaps}, 'ARRAY');
+is_deeply (
+  [ map { my $t = $_; $t =~ s#.*DepTest/Install/##; $t } @{$info->{typemaps}} ],
+  [ map { my $t = $_; $t =~ s#build/##; $t } @typemaps ],
+  'check typemaps actually saved/loaded'
+);
 
 like ($info->{instpath}, $install_part);
 
