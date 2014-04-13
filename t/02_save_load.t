@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More tests => 28;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
@@ -79,9 +79,11 @@ my $install_part = qr|DepTest.Install|;
 like ($info->{inc}, $install_part);
 isnt (index($info->{inc}, $inc), -1);
 
+my @typemaps_expected = map { my $t = $_; $t =~ s#build/##; $t } @typemaps;
+sub strip_typemap { my $t = $_; $t =~ s#.*DepTest/Install/##; $t }
 is_deeply (
-  [ map { my $t = $_; $t =~ s#.*DepTest/Install/##; $t } @{$info->{typemaps}} ],
-  [ map { my $t = $_; $t =~ s#build/##; $t } @typemaps ],
+  [ map { strip_typemap($_) } @{$info->{typemaps}} ],
+  \@typemaps_expected,
   'check typemaps actually saved/loaded'
 );
 
@@ -90,5 +92,18 @@ like ($info->{instpath}, $install_part);
 is_deeply ($info->{deps}, []);
 
 is ($info->{libs}, $libs);
+
+# now check package vars are set, per the ::load doc!
+{
+no warnings qw(once);
+is ($DepTest::Install::Files::inc, $inc);
+is_deeply (
+  [ map { strip_typemap($_) } @DepTest::Install::Files::typemaps ],
+  \@typemaps_expected,
+  'api check typemaps'
+);
+is_deeply (\@DepTest::Install::Files::deps, []);
+is ($DepTest::Install::Files::libs, $libs);
+}
 
 # --------------------------------------------------------------------------- #
