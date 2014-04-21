@@ -112,6 +112,7 @@ sub install {
 
 sub save_config {
 	use Data::Dumper;
+	local $Data::Dumper::Terse = 0;
 	use IO::File;
 
 	my ($self, $filename) = @_;
@@ -120,16 +121,13 @@ sub save_config {
 		or croak "can't open '$filename' for writing: $!\n";
 
 	print $file "package $self->{name}\::Install::Files;\n\n";
-	# for modern stuff
 	print $file "".Data::Dumper->Dump([{
 		inc => join (" ", @{ $self->{inc} }),
 		libs => $self->{libs},
 		typemaps => [ map { basename $_ } @{ $self->{typemaps} } ],
 		deps => [keys %{ $self->{deps} }],
 	}], ['self']);
-	# for ancient stuff
-	print $file "\n\n# this is for backwards compatiblity\n";
-	print $file "\@deps = \@{ \$self->{deps} };\n";
+	print $file "\n\n\@deps = \@{ \$self->{deps} };\n";
 	print $file "\@typemaps = \@{ \$self->{typemaps} };\n";
 	print $file "\$libs = \$self->{libs};\n";
 	print $file "\$inc = \$self->{inc};\n";
@@ -414,6 +412,9 @@ may be retrieved later.  The object can also reformat this information
 into the data structures required by ExtUtils::MakeMaker's WriteMakefile
 function.
 
+For information on how to make your module fit into this scheme, see
+L</"hashref = ExtUtils::Depends::load (name)">.
+
 When creating a new Depends object, you give it a name, which is the name
 of the module you are building.   You can also specify the names of modules
 on which this module depends.  These dependencies will be loaded
@@ -545,6 +546,14 @@ List of modules on which this one depends.  This key will not exist when
 loading files created by old versions of ExtUtils::Depends.
 
 =back
+
+If you want to make module I<name> support this, you must provide
+a module I<name>::Install::Files, which on loading will provide the
+following package variables: C<@typemaps>, C<$inc>, C<$libs>, C<$deps>,
+with the same contents as above (not coincidentally). The C<load>
+function will supply the C<instpath>. An easy way to achieve this is
+to use the method L</"$depends-E<gt>save_config ($filename)">, but your
+package may have different facilities already.
 
 =item $depends->load_deps
 

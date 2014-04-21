@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More tests => 28;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
@@ -40,6 +40,8 @@ my @installed_files = qw(dep.h
                          dep-private.h);
 $dep_info->install (@installed_files);
 
+use Data::Dumper;
+$Data::Dumper::Terse = 1;
 $dep_info->save_config (catfile $tmp_inc, qw(DepTest Install Files.pm));
 
 # --------------------------------------------------------------------------- #
@@ -75,14 +77,33 @@ my $info = ExtUtils::Depends::load ('DepTest');
 
 my $install_part = qr|DepTest.Install|;
 like ($info->{inc}, $install_part);
-ok (-1 != index $info->{inc}, $inc);
+isnt (index($info->{inc}, $inc), -1);
 
-isa_ok ($info->{typemaps}, 'ARRAY');
+my @typemaps_expected = map { my $t = $_; $t =~ s#build/##; $t } @typemaps;
+sub strip_typemap { my $t = $_; $t =~ s#.*DepTest/Install/##; $t }
+is_deeply (
+  [ map { strip_typemap($_) } @{$info->{typemaps}} ],
+  \@typemaps_expected,
+  'check typemaps actually saved/loaded'
+);
 
 like ($info->{instpath}, $install_part);
 
 is_deeply ($info->{deps}, []);
 
 is ($info->{libs}, $libs);
+
+# now check package vars are set, per the ::load doc!
+{
+no warnings qw(once);
+is ($DepTest::Install::Files::inc, $inc);
+is_deeply (
+  [ map { strip_typemap($_) } @DepTest::Install::Files::typemaps ],
+  \@typemaps_expected,
+  'api check typemaps'
+);
+is_deeply (\@DepTest::Install::Files::deps, []);
+is ($DepTest::Install::Files::libs, $libs);
+}
 
 # --------------------------------------------------------------------------- #
