@@ -43,6 +43,9 @@ DESCRIPTION
     into the data structures required by ExtUtils::MakeMaker's WriteMakefile
     function.
 
+    For information on how to make your module fit into this scheme, see
+    "hashref = ExtUtils::Depends::load (name)".
+
     When creating a new Depends object, you give it a name, which is the
     name of the module you are building. You can also specify the names of
     modules on which this module depends. These dependencies will be loaded
@@ -148,6 +151,14 @@ METHODS
             List of modules on which this one depends. This key will not
             exist when loading files created by old versions of
             ExtUtils::Depends.
+
+        If you want to make module *name* support this, you must provide a
+        module *name*::Install::Files, which on loading will provide the
+        following package variables: @typemaps, $inc, $libs, $deps, with the
+        same contents as above (not coincidentally). The "load" function
+        will supply the "instpath". An easy way to achieve this is to use
+        the method "$depends->save_config ($filename)", but your package may
+        have different facilities already.
 
     $depends->load_deps
         Load *$depends* dependencies, by calling "load" on each dependency
