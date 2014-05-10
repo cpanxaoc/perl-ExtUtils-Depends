@@ -80,7 +80,7 @@ like ($info->{inc}, $install_part);
 isnt (index($info->{inc}, $inc), -1);
 
 my @typemaps_expected = map { my $t = $_; $t =~ s#build/##; $t } @typemaps;
-sub strip_typemap { my $t = $_; $t =~ s#.*DepTest/Install/##; $t }
+sub strip_typemap { my $t = $_; my $tmp = catfile('DepTest','Install',' '); $tmp =~ s# $##; $t =~ s#.*\Q$tmp\E##; $t }
 is_deeply (
   [ map { strip_typemap($_) } @{$info->{typemaps}} ],
   \@typemaps_expected,
