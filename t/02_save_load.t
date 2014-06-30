@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 28;
+use Test::More tests => 29;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
@@ -105,5 +105,16 @@ is_deeply (
 is_deeply (\@DepTest::Install::Files::deps, []);
 is ($DepTest::Install::Files::libs, $libs);
 }
+
+# test Inline class method
+is_deeply (
+  DepTest::Install::Files->Inline('C'),
+  {
+    INC => $inc,
+    LIBS => $libs,
+    TYPEMAPS => \@typemaps_expected,
+  },
+  'api check Inline method'
+);
 
 # --------------------------------------------------------------------------- #

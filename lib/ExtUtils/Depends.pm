@@ -147,6 +147,15 @@ sub save_config {
 			last;
 		}
 	}
+
+	sub Inline {
+		my (\$class, \$lang) = \@_;
+		if (\$lang ne 'C') {
+			warn "Warning: Inline hints not available for \$lang language\n";
+			return;
+		}
+		+{ map { (uc(\$_) => \$self->{\$_}) } qw(inc libs typemaps) };
+	}
 EOT
 
 	print $file "\n1;\n";
@@ -451,6 +460,20 @@ For example:
      this command automatically brings in all the stuff needed
      for Glib, since Gtk2 depends on it.
 
+When the configuration information is saved, it also includes a class
+method called C<Inline>, inheritable by your module. This allows you in
+your module to simply say at the top:
+
+  package Mymod;
+  use parent 'Mymod::Install::Files'; # to inherit 'Inline' method
+
+And users of C<Mymod> who want to write inline code (using L<Inline>)
+will simply be able to write:
+
+  use Inline with => 'Mymod';
+
+And all the necessary header files, defines, and libraries will be added
+for them.
 
 =head1 METHODS
 
@@ -513,8 +536,9 @@ passed through WriteMakefile's PM key.
 Save the important information from I<$depends> to I<$filename>, and
 set it up to be installed as I<name>::Install::Files.
 
-Note: the actual value of I<$filename> seems to be irrelevant, but its
-usage is kept for backward compatibility.
+Note: the actual value of I<$filename> is unimportant so long as it
+doesn't clash with any other local files. It will be installed as
+I<name>::Install::Files.
 
 =item hash = $depends->get_makefile_vars
 
