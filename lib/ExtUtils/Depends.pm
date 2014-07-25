@@ -7,6 +7,7 @@ package ExtUtils::Depends;
 use strict;
 use warnings;
 use Carp;
+use Config;
 use File::Find;
 use File::Spec;
 use Data::Dumper;
@@ -301,7 +302,7 @@ sub build_dll_lib {
 	my ($self, $vars) = @_;
 	$vars->{macro} ||= {};
 	$vars->{macro}{'INST_DYNAMIC_LIB'} =
-		'$(INST_ARCHAUTODIR)/$(BASEEXT)$(LIB_EXT)';
+		'$(INST_ARCHAUTODIR)/$(DLBASE)$(LIB_EXT)';
 }
 
 # Search for extra library files to link against on Windows (either native
@@ -313,6 +314,7 @@ sub find_extra_libs {
 	my %mappers = (
 		MSWin32 => sub { $_[0] . '\.(?:lib|a)' },
 		cygwin	=> sub { $_[0] . '\.dll'},
+		android => sub { $_[0] . '\.' . $Config{dlext} },
 	);
 	my $mapper = $mappers{$^O};
 	return () unless defined $mapper;
@@ -338,6 +340,18 @@ sub find_extra_libs {
 
 		if ($matching_file && -f $matching_file) {
 			push @found_libs, ('-L' . $matching_dir, '-l' . $stem);
+			# Android's linker ignores the RTLD_GLOBAL flag
+			# and loads everything as if under RTLD_LOCAL.
+			# What this means in practice is that modules need
+			# to explicitly link to their dependencies,
+			# because otherwise they won't be able to locate any
+			# functions they define.
+			# We use the -l:foo.so flag to indicate that the
+			# actual library name to look for is foo.so, not
+			# libfoo.so
+			if ( $^O eq 'android' ) {
+				$found_libs[-1] = "-l:$stem.$Config{dlext}";
+			}
 			next;
 		}
 	}
