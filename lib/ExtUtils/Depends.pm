@@ -320,6 +320,10 @@ sub find_extra_libs {
 	my @found_libs = ();
 	foreach my $name (keys %{ $self->{deps} }) {
 		(my $stem = $name) =~ s/^.*:://;
+		if ( defined &DynaLoader::mod2fname ) {
+			 my @parts = split /::/, $name;
+			 $stem = DynaLoader::mod2fname([@parts]);
+		}
 		my $lib = $mapper->($stem);
 		my $pattern = qr/$lib$/;
 
