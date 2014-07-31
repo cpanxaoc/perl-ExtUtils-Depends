@@ -356,7 +356,7 @@ sub static_lib {
 	return <<"__EOM__"
 # This isn't actually a static lib, it just has the same name on Win32.
 \$(INST_DYNAMIC_LIB): \$(INST_DYNAMIC)
-	$DLLTOOL --def \$(EXPORT_LIST) --output-lib \$\@ --dllname \$(BASEEXT).\$(SO) \$(INST_DYNAMIC)
+	$DLLTOOL --def \$(EXPORT_LIST) --output-lib \$\@ --dllname \$(DLBASE).\$(DLEXT) \$(INST_DYNAMIC)
 
 dynamic:: \$(INST_DYNAMIC_LIB)
 __EOM__
