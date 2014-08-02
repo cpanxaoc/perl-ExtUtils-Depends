@@ -1,5 +1,11 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.309 Sat Aug  2 15:23:03 PDT 2014
+    - Depends.pm: use $DLEXT instead of $SO for library filename extensions
+    - MANIFEST: remove MYMETA.* files
+    - use DynaLoader::mod2fname if available
+    - Added Android support
+
 0.308 Sun May 18 16:22:11 PDT 2014
     - Fix win32 test failure in t/02_save_load.t (closes RT#95301)
 
