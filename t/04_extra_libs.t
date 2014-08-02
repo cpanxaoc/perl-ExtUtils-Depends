@@ -14,7 +14,8 @@ my $tmp_inc = temp_inc;
 
 plan (($^O eq 'MSWin32' || $^O eq 'cygwin' || $^O eq 'android') ?
         (tests => 1) :
-        (skip_all => 'test only applicable to MSWin32 and cygwin'));
+        (skip_all
+            => "test only for 'MSWin32', 'cygwin', and 'android'"));
 
 my $dep_info = ExtUtils::Depends->new ('DepTest');
 $dep_info->save_config (catfile $tmp_inc, qw(DepTest Install Files.pm));
