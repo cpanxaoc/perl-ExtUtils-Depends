@@ -40,6 +40,34 @@ my @installed_files = qw(dep.h
                          dep-private.h);
 $dep_info->install (@installed_files);
 
+my $INC_FRAG = '-Ddistinctive';
+map { make_fake($_) } qw(Fakenew Fakeold);
+sub Fakenew::Install::Files::Inline { +{ INC => $INC_FRAG } }
+sub Fakenew::Install::Files::deps { qw(Fakeold) }
+{
+  no warnings 'once';
+  @Fakeold::Install::Files::deps = qw(Fakenew);
+  $Fakeold::Install::Files::inc = $INC_FRAG;
+  $Fakeold::Install::Files::libs = '';
+}
+sub make_fake {
+  my $class = shift . '::Install::Files';
+  my @pieces = split '::', $class;
+  require File::Spec;
+  my $pm = join('/', @pieces) . '.pm';
+  $INC{$pm} = File::Spec->catdir(qw(build fake), split '/', $pm);
+}
+sub test_load {
+  my ($info, $msg) = @_;
+  my $install_part = qr|Fake.*Install|;
+  like ($info->{inc}, $install_part, "$msg inc generic");
+  like ($info->{inc}, qr/$INC_FRAG/, "$msg inc specific");
+  ok (scalar(grep { /Fake/ } @{$info->{deps}}), $msg);
+  ok (exists $info->{libs}, $msg);
+}
+test_load (ExtUtils::Depends::load('Fakenew'), 'load new scheme');
+test_load (ExtUtils::Depends::load('Fakeold'), 'load old scheme');
+
 use Data::Dumper;
 $Data::Dumper::Terse = 1;
 $dep_info->save_config (catfile $tmp_inc, qw(DepTest Install Files.pm));

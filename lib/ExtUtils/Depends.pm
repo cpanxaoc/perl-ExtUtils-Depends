@@ -198,20 +198,32 @@ sub load {
 		$instpath = File::Spec->rel2abs ($instpath);
 	}
 
-	my @typemaps = map {
-		File::Spec->rel2abs ($_, $instpath)
-	} @{"$depinstallfiles\::typemaps"};
+	my (@typemaps, $inc, $libs, @deps);
+
+	@deps = eval { $depinstallfiles->deps };
+	@deps = @{"$depinstallfiles\::deps"}
+		if $@ and exists ${"$depinstallfiles\::"}{deps};
+
+	my $inline = eval { $depinstallfiles->Inline('C') };
+	if (!$@) {
+		$inc = $inline->{INC} // '';
+		$libs = $inline->{LIBS} // '';
+		@typemaps = @{ $inline->{TYPEMAPS} || [] };
+	} else {
+		$inc = ${"$depinstallfiles\::inc"} // '';
+		$libs = ${"$depinstallfiles\::libs"} // '';
+		@typemaps = @{"$depinstallfiles\::typemaps"};
+	}
+	@typemaps = map { File::Spec->rel2abs ($_, $instpath) } @typemaps;
 
 	{
 		instpath => $instpath,
 		typemaps => \@typemaps,
-		inc      => "-I$instpath ".${"$depinstallfiles\::inc"},
-		libs     => ${"$depinstallfiles\::libs"},
+		inc      => "-I$instpath $inc",
+		libs     => $libs,
 		# this will not exist when loading files from old versions
 		# of ExtUtils::Depends.
-		(exists ${"$depinstallfiles\::"}{deps}
-		  ? (deps => \@{"$depinstallfiles\::deps"})
-		  : ()), 
+		deps => \@deps,
 	}
 }
 
@@ -601,12 +613,17 @@ loading files created by old versions of ExtUtils::Depends.
 =back
 
 If you want to make module I<name> support this, you must provide
-a module I<name>::Install::Files, which on loading will provide the
-following package variables: C<@typemaps>, C<$inc>, C<$libs>, C<$deps>,
-with the same contents as above (not coincidentally). The C<load>
-function will supply the C<instpath>. An easy way to achieve this is
-to use the method L</"$depends-E<gt>save_config ($filename)">, but your
-package may have different facilities already.
+a module I<name>::Install::Files, which on loading will implement the
+following class methods:
+
+  $hashref = name::Install::Files->Inline('C');
+  # hash to contain any necessary TYPEMAPS (array-ref), LIBS, INC
+  @deps = name::Install::Files->deps;
+  # any modules on which "name" depends
+
+An easy way to achieve this is to use the method
+L</"$depends-E<gt>save_config ($filename)">, but your package may have
+different facilities already.
 
 =item $depends->load_deps
 
