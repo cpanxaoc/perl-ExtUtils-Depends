@@ -106,7 +106,7 @@ is_deeply (\@DepTest::Install::Files::deps, [], 'package deps');
 is ($DepTest::Install::Files::libs, $libs, 'package libs');
 }
 
-# test Inline class method
+# test Inline class methods
 is_deeply (
   DepTest::Install::Files->Inline('C'),
   {
@@ -116,6 +116,7 @@ is_deeply (
   },
   'api check Inline method'
 );
+is_deeply ([ DepTest::Install::Files->deps ], [], 'api check deps method');
 
 # --------------------------------------------------------------------------- #
 

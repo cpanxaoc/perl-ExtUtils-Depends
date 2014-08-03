@@ -151,6 +151,8 @@ EOF
 		}
 	}
 
+	sub deps { \@{ \$self->{deps} }; }
+
 	sub Inline {
 		my (\$class, \$lang) = \@_;
 		if (\$lang ne 'C') {
@@ -476,6 +478,13 @@ will simply be able to write:
 
 And all the necessary header files, defines, and libraries will be added
 for them.
+
+The C<Mymod::Install::Files> will also implement a C<deps> method,
+which will return a list of any modules that C<Mymod> depends on -
+you will not normally need to use this:
+
+  require Mymod::Install::Files;
+  @deps = Mymod::Install::Files->deps;
 
 =head1 METHODS
 
