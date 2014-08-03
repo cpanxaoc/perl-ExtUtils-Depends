@@ -128,10 +128,13 @@ sub save_config {
 		typemaps => [ map { basename $_ } @{ $self->{typemaps} } ],
 		deps => [keys %{ $self->{deps} }],
 	}], ['self']);
-	print $file "\n\n\@deps = \@{ \$self->{deps} };\n";
-	print $file "\@typemaps = \@{ \$self->{typemaps} };\n";
-	print $file "\$libs = \$self->{libs};\n";
-	print $file "\$inc = \$self->{inc};\n";
+	print $file <<'EOF';
+
+@deps = @{ $self->{deps} };
+@typemaps = @{ $self->{typemaps} };
+$libs = $self->{libs};
+$inc = $self->{inc};
+EOF
 	# this is ridiculous, but old versions of ExtUtils::Depends take
 	# first $loadedmodule::CORE and then $INC{$file} --- the fallback
 	# includes the Filename.pm, which is not useful.  so we must add
@@ -177,14 +180,13 @@ sub load {
 	eval {
 		require $relpath 
 	} or die " *** Can't load dependency information for $dep:\n   $@\n";
-	#
 	#print Dumper(\%INC);
 
 	# effectively $instpath = dirname($INC{$relpath})
 	@pieces = File::Spec->splitdir ($INC{$relpath});
 	pop @pieces;
 	my $instpath = File::Spec->catdir (@pieces);
-	
+
 	no strict;
 
 	croak "No dependency information found for $dep"
@@ -249,7 +251,7 @@ sub get_makefile_vars {
 	# collect and uniquify things from the dependencies.
 	# first, ensure they are completely loaded.
 	$self->load_deps;
-	
+
 	##my @defbits = map { split } @{ $self->{defines} };
 	my @incbits = map { split } @{ $self->{inc} };
 	my @libsbits = split /\s+/, $self->{libs};
