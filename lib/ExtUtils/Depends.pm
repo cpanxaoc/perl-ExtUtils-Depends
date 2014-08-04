@@ -200,18 +200,20 @@ sub load {
 
 	my (@typemaps, $inc, $libs, @deps);
 
+	# this will not exist when loading files from old versions
+	# of ExtUtils::Depends.
 	@deps = eval { $depinstallfiles->deps };
 	@deps = @{"$depinstallfiles\::deps"}
 		if $@ and exists ${"$depinstallfiles\::"}{deps};
 
 	my $inline = eval { $depinstallfiles->Inline('C') };
 	if (!$@) {
-		$inc = $inline->{INC} // '';
-		$libs = $inline->{LIBS} // '';
+		$inc = $inline->{INC} || '';
+		$libs = $inline->{LIBS} || '';
 		@typemaps = @{ $inline->{TYPEMAPS} || [] };
 	} else {
-		$inc = ${"$depinstallfiles\::inc"} // '';
-		$libs = ${"$depinstallfiles\::libs"} // '';
+		$inc = ${"$depinstallfiles\::inc"} || '';
+		$libs = ${"$depinstallfiles\::libs"} || '';
 		@typemaps = @{"$depinstallfiles\::typemaps"};
 	}
 	@typemaps = map { File::Spec->rel2abs ($_, $instpath) } @typemaps;
@@ -221,9 +223,7 @@ sub load {
 		typemaps => \@typemaps,
 		inc      => "-I$instpath $inc",
 		libs     => $libs,
-		# this will not exist when loading files from old versions
-		# of ExtUtils::Depends.
-		deps => \@deps,
+		deps     => \@deps,
 	}
 }
 
