@@ -1,5 +1,18 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.400 Sun Aug 10 13:58:24 CEST 2014
+    - In addition to the package variables $inc, $libs and @typemaps, write an
+      'Inline' method to <package>::Install::Files for easier interoperability
+      with the Inline module.
+    - Accompany the 'Inline' method with a 'deps' method in
+      <package>::Install::Files in addition to the @deps package variable.
+    - Make ExtUtils::Depends->load use the 'Inline' and 'deps' methods by
+      default, falling back to the package variables if the methods are not
+      defined.
+    - Make the docs recommend the 'Inline' and 'deps' approach for creating
+      <package>::Install::Files manually, without
+      ExtUtils::Depends::save_config.
+
 0.309 Sat Aug  2 15:23:03 PDT 2014
     - Depends.pm: use $DLEXT instead of $SO for library filename extensions
     - MANIFEST: remove MYMETA.* files
