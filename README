@@ -64,6 +64,28 @@ DESCRIPTION
          this command automatically brings in all the stuff needed
          for Glib, since Gtk2 depends on it.
 
+    When the configuration information is saved, it also includes a class
+    method called "Inline", inheritable by your module. This allows you in
+    your module to simply say at the top:
+
+      package Mymod;
+      use parent 'Mymod::Install::Files'; # to inherit 'Inline' method
+
+    And users of "Mymod" who want to write inline code (using Inline) will
+    simply be able to write:
+
+      use Inline with => 'Mymod';
+
+    And all the necessary header files, defines, and libraries will be added
+    for them.
+
+    The "Mymod::Install::Files" will also implement a "deps" method, which
+    will return a list of any modules that "Mymod" depends on - you will not
+    normally need to use this:
+
+      require Mymod::Install::Files;
+      @deps = Mymod::Install::Files->deps;
+
 METHODS
     $object = ExtUtils::Depends->new($name, @deps)
         Create a new depends object named *$name*. Any modules listed in
@@ -111,8 +133,9 @@ METHODS
         Save the important information from *$depends* to *$filename*, and
         set it up to be installed as *name*::Install::Files.
 
-        Note: the actual value of *$filename* seems to be irrelevant, but
-        its usage is kept for backward compatibility.
+        Note: the actual value of *$filename* is unimportant so long as it
+        doesn't clash with any other local files. It will be installed as
+        *name*::Install::Files.
 
     hash = $depends->get_makefile_vars
         Return the information in *$depends* in a format digestible by
@@ -153,12 +176,17 @@ METHODS
             ExtUtils::Depends.
 
         If you want to make module *name* support this, you must provide a
-        module *name*::Install::Files, which on loading will provide the
-        following package variables: @typemaps, $inc, $libs, $deps, with the
-        same contents as above (not coincidentally). The "load" function
-        will supply the "instpath". An easy way to achieve this is to use
-        the method "$depends->save_config ($filename)", but your package may
-        have different facilities already.
+        module *name*::Install::Files, which on loading will implement the
+        following class methods:
+
+          $hashref = name::Install::Files->Inline('C');
+          # hash to contain any necessary TYPEMAPS (array-ref), LIBS, INC
+          @deps = name::Install::Files->deps;
+          # any modules on which "name" depends
+
+        An easy way to achieve this is to use the method
+        "$depends->save_config ($filename)", but your package may have
+        different facilities already.
 
     $depends->load_deps
         Load *$depends* dependencies, by calling "load" on each dependency
