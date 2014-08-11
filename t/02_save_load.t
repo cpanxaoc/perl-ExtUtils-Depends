@@ -123,11 +123,11 @@ is_deeply ([ DepTest::Install::Files->deps ], [], 'api check deps method');
 # --------------------------------------------------------------------------- #
 
 my $INC_FRAG = '-Ddistinctive';
-make_test_pkg('PkgStorenew', <<EOF);
+make_test_pkg('PSnew', <<EOF);
 sub Inline { +{ INC => '$INC_FRAG' } }
-sub deps { qw(PkgStoreold) }
+sub deps { qw(PSold) }
 EOF
-make_test_pkg('PkgStoreold', "\@deps = qw(PkgStorenew); \$inc = '$INC_FRAG';");
+make_test_pkg('PSold', "\@deps = qw(PSnew); \$inc = '$INC_FRAG';");
 sub make_test_pkg {
   my ($base, $text) = @_;
   my $dir = catdir($tmp_inc, $base, qw(Install));
@@ -139,14 +139,14 @@ sub make_test_pkg {
 }
 sub test_load {
   my ($info, $msg) = @_;
-  my $install_part = qr|PkgStore.*Install|;
+  my $install_part = qr|PS.*Install|;
   like ($info->{inc}, $install_part, "$msg inc generic");
   like ($info->{inc}, qr/$INC_FRAG/, "$msg inc specific");
-  ok (scalar(grep { /PkgStore/ } @{$info->{deps}}), $msg);
+  ok (scalar(grep { /PS/ } @{$info->{deps}}), $msg);
   ok (exists $info->{libs}, $msg);
 }
-test_load (ExtUtils::Depends::load('PkgStorenew'), 'load new scheme');
-test_load (ExtUtils::Depends::load('PkgStoreold'), 'load old scheme');
+test_load (ExtUtils::Depends::load('PSnew'), 'load new scheme');
+test_load (ExtUtils::Depends::load('PSold'), 'load old scheme');
 
 # --------------------------------------------------------------------------- #
 
