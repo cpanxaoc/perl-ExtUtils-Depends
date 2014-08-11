@@ -7,6 +7,8 @@ use Test::More;
 use FindBin;
 use lib "$FindBin::Bin/lib";
 use TestHelper;
+use File::Path 'mkpath';
+use File::Spec::Functions 'catdir';
 
 use ExtUtils::Depends;
 
@@ -41,21 +43,19 @@ my @installed_files = qw(dep.h
 $dep_info->install (@installed_files);
 
 my $INC_FRAG = '-Ddistinctive';
-map { make_fake($_) } qw(PkgStorenew PkgStoreold);
-sub PkgStorenew::Install::Files::Inline { +{ INC => $INC_FRAG } }
-sub PkgStorenew::Install::Files::deps { qw(PkgStoreold) }
-{
-  no warnings 'once';
-  @PkgStoreold::Install::Files::deps = qw(PkgStorenew);
-  $PkgStoreold::Install::Files::inc = $INC_FRAG;
-  $PkgStoreold::Install::Files::libs = '';
-}
-sub make_fake {
-  my $class = shift . '::Install::Files';
-  my @pieces = split '::', $class;
-  require File::Spec;
-  my $pm = join('/', @pieces) . '.pm';
-  $INC{$pm} = File::Spec->catdir(qw(build fake), split '/', $pm);
+make_test_pkg('PkgStorenew', <<EOF);
+sub Inline { +{ INC => '$INC_FRAG' } }
+sub deps { qw(PkgStoreold) }
+EOF
+make_test_pkg('PkgStoreold', "\@deps = qw(PkgStorenew); \$inc = '$INC_FRAG';");
+sub make_test_pkg {
+  my ($base, $text) = @_;
+  my $dir = catdir($tmp_inc, $base, qw(Install));
+  mkpath($dir, 0, 0711);
+  local *FH;
+  open FH, '>', catfile($dir, 'Files.pm');
+  print FH sprintf "package %s;\n%s\n1;\n", $base . '::Install::Files', $text;
+  close FH;
 }
 sub test_load {
   my ($info, $msg) = @_;
