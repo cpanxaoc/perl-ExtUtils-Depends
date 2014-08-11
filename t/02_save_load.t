@@ -41,14 +41,14 @@ my @installed_files = qw(dep.h
 $dep_info->install (@installed_files);
 
 my $INC_FRAG = '-Ddistinctive';
-map { make_fake($_) } qw(Fakenew Fakeold);
-sub Fakenew::Install::Files::Inline { +{ INC => $INC_FRAG } }
-sub Fakenew::Install::Files::deps { qw(Fakeold) }
+map { make_fake($_) } qw(PkgStorenew PkgStoreold);
+sub PkgStorenew::Install::Files::Inline { +{ INC => $INC_FRAG } }
+sub PkgStorenew::Install::Files::deps { qw(PkgStoreold) }
 {
   no warnings 'once';
-  @Fakeold::Install::Files::deps = qw(Fakenew);
-  $Fakeold::Install::Files::inc = $INC_FRAG;
-  $Fakeold::Install::Files::libs = '';
+  @PkgStoreold::Install::Files::deps = qw(PkgStorenew);
+  $PkgStoreold::Install::Files::inc = $INC_FRAG;
+  $PkgStoreold::Install::Files::libs = '';
 }
 sub make_fake {
   my $class = shift . '::Install::Files';
@@ -59,14 +59,14 @@ sub make_fake {
 }
 sub test_load {
   my ($info, $msg) = @_;
-  my $install_part = qr|Fake.*Install|;
+  my $install_part = qr|PkgStore.*Install|;
   like ($info->{inc}, $install_part, "$msg inc generic");
   like ($info->{inc}, qr/$INC_FRAG/, "$msg inc specific");
-  ok (scalar(grep { /Fake/ } @{$info->{deps}}), $msg);
+  ok (scalar(grep { /PkgStore/ } @{$info->{deps}}), $msg);
   ok (exists $info->{libs}, $msg);
 }
-test_load (ExtUtils::Depends::load('Fakenew'), 'load new scheme');
-test_load (ExtUtils::Depends::load('Fakeold'), 'load old scheme');
+test_load (ExtUtils::Depends::load('PkgStorenew'), 'load new scheme');
+test_load (ExtUtils::Depends::load('PkgStoreold'), 'load old scheme');
 
 use Data::Dumper;
 $Data::Dumper::Terse = 1;
