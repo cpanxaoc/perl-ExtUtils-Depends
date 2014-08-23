@@ -1,5 +1,12 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.401 Sat Aug 23 14:20:11 IRKT 2014
+    - Add README changes created by 'make dist' from the POD
+    - Rename test modules
+    - Test old/new schemes with .pm files
+    - Move old/new scheme tests from middle of other stuff to end
+    - Rename test packages to 8.3 unique
+
 0.400 Sun Aug 10 13:58:24 CEST 2014
     - In addition to the package variables $inc, $libs and @typemaps, write an
       'Inline' method to <package>::Install::Files for easier interoperability
