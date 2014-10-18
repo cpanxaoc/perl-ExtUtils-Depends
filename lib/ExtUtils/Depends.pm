@@ -12,7 +12,7 @@ use File::Find;
 use File::Spec;
 use Data::Dumper;
 
-our $VERSION = '0.401';
+our $VERSION = '0.402';
 
 sub import {
 	my $class = shift;

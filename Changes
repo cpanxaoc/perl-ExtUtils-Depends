@@ -1,5 +1,9 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.402 Sat Oct 18 18:06:19 EEST 2014
+    - Set Data::Dumper::Sortkeys = 1 in ExtUtils::Depends->save_config();
+      patch submitted by Niko Tyni of the Debian Perl Group; fixes RT#99260
+
 0.401 Sat Aug 23 14:20:11 IRKT 2014
     - Add README changes created by 'make dist' from the POD
     - Rename test modules
