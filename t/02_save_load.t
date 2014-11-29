@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More tests => 38;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
@@ -147,7 +147,3 @@ sub test_load {
 }
 test_load (ExtUtils::Depends::load('PSnew'), 'load new scheme');
 test_load (ExtUtils::Depends::load('PSold'), 'load old scheme');
-
-# --------------------------------------------------------------------------- #
-
-done_testing;

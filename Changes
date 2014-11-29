@@ -1,5 +1,9 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+<next>
+    - Avoid using Test::More::done_testing() for to support building
+      out-of-the-box on older perls.
+
 0.402 Sat Oct 18 18:06:19 EEST 2014
     - Set Data::Dumper::Sortkeys = 1 in ExtUtils::Depends->save_config();
       patch submitted by Niko Tyni of the Debian Perl Group; fixes RT#99260

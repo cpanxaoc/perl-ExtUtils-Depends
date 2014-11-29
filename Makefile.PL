@@ -42,7 +42,7 @@ my %meta_merge = (
         },
         build => {
             requires => {
-                'Test::More' => 0.88,
+                'Test::More' => 0,
             },
         },
         test => {
