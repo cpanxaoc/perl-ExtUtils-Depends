@@ -1,6 +1,6 @@
 Revision history for Perl extension ExtUtils::Depends.
 
-<next>
+0.403
     - Avoid using Test::More::done_testing() for to support building
       out-of-the-box on older perls.
 
