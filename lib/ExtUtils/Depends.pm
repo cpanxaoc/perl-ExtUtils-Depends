@@ -178,7 +178,8 @@ sub load {
 	my $dep = shift;
 	my @pieces = split /::/, $dep;
 	my @suffix = qw/ Install Files /;
-	my $relpath = File::Spec->catfile (@pieces, @suffix) . '.pm';
+	# not File::Spec - see perldoc -f require
+	my $relpath = join('/', @pieces, @suffix) . '.pm';
 	my $depinstallfiles = join "::", @pieces, @suffix;
 	eval {
 		require $relpath 

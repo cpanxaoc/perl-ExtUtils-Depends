@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 38;
+use Test::More tests => 40;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
@@ -44,7 +44,13 @@ $dep_info->install (@installed_files);
 
 use Data::Dumper;
 $Data::Dumper::Terse = 1;
-$dep_info->save_config (catfile $tmp_inc, qw(DepTest Install Files.pm));
+my $IFpm = catfile $tmp_inc, qw(DepTest Install Files.pm);
+$dep_info->save_config ($IFpm);
+
+# ensure '/' used for config filename in require, not File::Spec
+open my $iffh, '>>', $IFpm or die "write $IFpm: $!";
+print $iffh qq{\nwarn "LOADING\\n";\n1;\n};
+undef $iffh;
 
 # --------------------------------------------------------------------------- #
 
@@ -75,7 +81,16 @@ foreach my $file (@c_files, @xs_files) {
 
 # --------------------------------------------------------------------------- #
 
-my $info = ExtUtils::Depends::load ('DepTest');
+my $info;
+{
+my $warning = '';
+local $SIG{__WARN__} = sub { $warning .= join '', @_; };
+$info = ExtUtils::Depends::load ('DepTest');
+like $warning, qr/LOADING/, 'loaded once';
+$warning = '';
+require DepTest::Install::Files;
+unlike $warning, qr/LOADING/, 'not loaded twice';
+}
 
 my $install_part = qr|DepTest.Install|;
 like ($info->{inc}, $install_part, "loaded inc");
