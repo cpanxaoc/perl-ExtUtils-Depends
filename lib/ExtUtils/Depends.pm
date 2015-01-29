@@ -127,7 +127,7 @@ sub save_config {
 		inc => join (" ", @{ $self->{inc} }),
 		libs => $self->{libs},
 		typemaps => [ map { basename $_ } @{ $self->{typemaps} } ],
-		deps => [keys %{ $self->{deps} }],
+		deps => [sort keys %{ $self->{deps} }],
 	}], ['self']);
 	print $file <<'EOF';
 
@@ -272,7 +272,7 @@ sub get_makefile_vars {
 	my @incbits = map { split } @{ $self->{inc} };
 	my @libsbits = split /\s+/, $self->{libs};
 	my @typemaps = @{ $self->{typemaps} };
-	foreach my $d (keys %{ $self->{deps} }) {
+	foreach my $d (sort keys %{ $self->{deps} }) {
 		my $dep = $self->{deps}{$d};
 		#push @defbits, @{ $dep->{defines} };
 		push @incbits, @{ $dep->{defines} } if $dep->{defines};
