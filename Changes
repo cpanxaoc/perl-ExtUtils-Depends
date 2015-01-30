@@ -1,5 +1,10 @@
 Revision history for Perl extension ExtUtils::Depends.
 
+0.404
+    - Depends.pm: sort deps in save_config() and get_makefile_vars(); patch
+      submitted by Debian's reproducible build team for RT#101602
+    - Use / to make ::load filename, not File::Spec - perldoc -f require
+
 0.403
     - Avoid using Test::More::done_testing() for to support building
       out-of-the-box on older perls.
