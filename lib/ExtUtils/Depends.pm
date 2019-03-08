@@ -1,7 +1,3 @@
-#
-# $Id$
-#
-
 package ExtUtils::Depends;
 
 use strict;
