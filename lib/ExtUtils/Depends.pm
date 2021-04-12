@@ -152,10 +152,6 @@ EOF
 
 	sub Inline {
 		my (\$class, \$lang) = \@_;
-		if (\$lang ne 'C') {
-			warn "Warning: Inline hints not available for \$lang language\n";
-			return;
-		}
 		+{ map { (uc(\$_) => \$self->{\$_}) } qw(inc libs typemaps) };
 	}
 EOT
