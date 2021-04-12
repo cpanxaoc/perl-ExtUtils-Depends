@@ -386,29 +386,6 @@ sub find_extra_libs {
 	return @found_libs;
 }
 
-# Hook into ExtUtils::MakeMaker to create an import library on MSWin32 when gcc
-# is used.  FIXME: Ideally, this should be done in EU::MM itself.
-package # wrap to fool the CPAN indexer
-	ExtUtils::MM;
-use Config;
-sub static_lib {
-	my $base = shift->SUPER::static_lib(@_);
-
-	return $base unless $^O =~ /MSWin32/ && $Config{cc} =~ /\bgcc\b/i;
-
-	my $DLLTOOL = $Config{'dlltool'} || 'dlltool';
-
-	return <<"__EOM__"
-# This isn't actually a static lib, it just has the same name on Win32.
-\$(INST_DYNAMIC_LIB): \$(INST_DYNAMIC)
-	$DLLTOOL --def \$(EXPORT_LIST) --output-lib \$\@ --dllname \$(DLBASE).\$(DLEXT) \$(INST_DYNAMIC)
-
-dynamic:: \$(INST_DYNAMIC_LIB)
-__EOM__
-}
-
-1;
-
 __END__
 
 =head1 NAME
