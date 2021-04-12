@@ -247,17 +247,8 @@ sub load_deps {
 
 sub uniquify {
 	my %seen;
-	# we use a seen hash, but also keep indices to preserve
-	# first-seen order.
-	my $i = 0;
-	foreach (@_) {
-		$seen{$_} = ++$i
-			unless exists $seen{$_};
-	}
-	#warn "stripped ".(@_ - (keys %seen))." redundant elements\n";
-	sort { $seen{$a} <=> $seen{$b} } keys %seen;
+	grep !$seen{$_}++, @_;
 }
-
 
 sub get_makefile_vars {
 	my $self = shift;
