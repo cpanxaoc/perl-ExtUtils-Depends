@@ -229,20 +229,14 @@ sub _quote_if_space { $_[0] =~ / / ? qq{"$_[0]"} : $_[0] }
 
 sub load_deps {
 	my $self = shift;
-	my @load = grep { not $self->{deps}{$_} } keys %{ $self->{deps} };
+	my @load = grep !$self->{deps}{$_}, keys %{ $self->{deps} };
 	my %in_load; @in_load{@load} = ();
 	foreach my $d (@load) {
-		my $dep = load ($d);
-		$self->{deps}{$d} = $dep;
-		if ($dep->{deps}) {
-			foreach my $childdep (@{ $dep->{deps} }) {
-				push @load, $childdep
-					unless
-						$self->{deps}{$childdep}
-					or
-						exists $in_load{$childdep};
-			}
-		}
+		$self->{deps}{$d} = my $dep = load($d);
+		my @new_deps = grep !($self->{deps}{$_} || exists $in_load{$_}),
+			@{ $dep->{deps} || [] };
+		push @load, @new_deps;
+		@in_load{@new_deps} = ();
 	}
 }
 
