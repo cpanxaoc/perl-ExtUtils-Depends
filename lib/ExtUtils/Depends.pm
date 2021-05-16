@@ -8,7 +8,7 @@ use File::Find;
 use File::Spec;
 use Data::Dumper;
 
-our $VERSION = '0.8000';
+our $VERSION = '0.8001';
 
 sub import {
 	my $class = shift;
